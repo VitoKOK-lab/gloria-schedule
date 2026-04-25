@@ -1,25 +1,98 @@
 {
   "staff": [
-    { "id": "Wiggie", "name": "Wiggie", "type": "FT", "role": "ASM", "fixedDayOff": null },
-    { "id": "LIV",    "name": "LIV",    "type": "FT", "role": "SUP", "fixedDayOff": null },
-    { "id": "Demi",   "name": "Demi",   "type": "FT", "role": "SSA", "fixedDayOff": null },
-    { "id": "Kai",    "name": "Kai",    "type": "FT", "role": "SA",  "fixedDayOff": null },
-    { "id": "彤彤",   "name": "彤彤",   "type": "FT", "role": "SA",  "fixedDayOff": null },
-    { "id": "Alvin",  "name": "Alvin",  "type": "FT", "role": "SA",  "fixedDayOff": null },
-    { "id": "Yvette", "name": "Yvette", "type": "FT", "role": "SA",  "fixedDayOff": null },
-    { "id": "Vina",   "name": "Vina",   "type": "FT", "role": "SA",  "fixedDayOff": null },
-    { "id": "婕芸",   "name": "婕芸",   "type": "FT", "role": "SA",  "fixedDayOff": null }
+    {
+      "id": "Wiggie",
+      "name": "Wiggie",
+      "type": "FT",
+      "role": "ASM",
+      "fixedDayOff": null
+    },
+    {
+      "id": "LIV",
+      "name": "LIV",
+      "type": "FT",
+      "role": "SUP",
+      "fixedDayOff": null
+    },
+    {
+      "id": "Demi",
+      "name": "Demi",
+      "type": "FT",
+      "role": "SSA",
+      "fixedDayOff": null
+    },
+    {
+      "id": "Kai",
+      "name": "Kai",
+      "type": "FT",
+      "role": "SA",
+      "fixedDayOff": null
+    },
+    {
+      "id": "彤彤",
+      "name": "彤彤",
+      "type": "FT",
+      "role": "SA",
+      "fixedDayOff": null
+    },
+    {
+      "id": "Alvin",
+      "name": "Alvin",
+      "type": "FT",
+      "role": "SA",
+      "fixedDayOff": null
+    },
+    {
+      "id": "Yvette",
+      "name": "Yvette",
+      "type": "FT",
+      "role": "SA",
+      "fixedDayOff": null
+    },
+    {
+      "id": "Vina",
+      "name": "Vina",
+      "type": "FT",
+      "role": "SA",
+      "fixedDayOff": null
+    },
+    {
+      "id": "婕芸",
+      "name": "婕芸",
+      "type": "FT",
+      "role": "SA",
+      "fixedDayOff": null
+    }
   ],
   "rules": {
-    "daysOffPerMonth": { "min": 10, "max": 11 },
-    "noSimultaneousOff": ["Wiggie", "LIV", "Demi"],
+    "daysOffPerMonth": {
+      "min": 10,
+      "max": 11
+    },
+    "noSimultaneousOff": [
+      "Wiggie",
+      "LIV",
+      "Demi"
+    ],
     "maxConsecutiveWorkDays": 4,
     "preferConsecutiveWorkDays": 3,
     "earlyShiftBalanceTolerance": 1,
     "staffingRequirements": {
-      "weekday": { "A": 1, "M": 0, "P": 3 },
-      "friday":  { "A": 1, "M": 1, "P": 3 },
-      "weekend": { "A": 1, "M": 1, "P": 3 }
+      "weekday": {
+        "A": 1,
+        "M": 0,
+        "P": 3
+      },
+      "friday": {
+        "A": 1,
+        "M": 1,
+        "P": 3
+      },
+      "weekend": {
+        "A": 1,
+        "M": 1,
+        "P": 3
+      }
     }
   }
 }
