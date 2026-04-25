@@ -99,8 +99,9 @@ td.past-day .cell.empty{color:#E0E0E0 !important}
 @media print{
   @page{size:A3 landscape;margin:8mm}
   header,#lockBanner,#histBanner,.mbar,.editor-toolbar,.sidebar,#evtPop,#picker{display:none !important}
-  .cell.vio{outline:none !important}
-  .cell.swap-req{outline:none !important}
+  .cell.vio{outline:none !important}.cell.vio::before{display:none !important}
+  .cell.swap-req{outline:none !important}.cell.swap-req::before{display:none !important}
+  .cell.fixed-off::after{display:none !important}
   #page-schedule{display:block !important}
   #editor{display:block !important;height:auto !important}
   .editor-wrap{height:auto !important;overflow:visible !important;display:block !important}
