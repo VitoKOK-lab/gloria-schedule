@@ -89,11 +89,11 @@ td.wbg{background:transparent}
 th.hol{background:#F0E8F8 !important;cursor:pointer;border-bottom:3px solid #9C27B0 !important}
 th.hol:hover{background:#E8D8F5 !important}
 td.hol-bg{background:transparent !important}
-/* Weekend column frame: Sat left border, Sun right border */
-th.sat-sep,td.sat-sep{border-left:2px solid var(--gold) !important}
-th.sun-sep,td.sun-sep{border-right:2px solid var(--gold) !important}
-/* Weekday holiday left+right border */
-th.hol-wd,td.hol-wd{border-left:2px solid #9C27B0 !important;border-right:2px solid #9C27B0 !important}
+/* Weekend column frame: Sat left line, Sun right line (box-shadow avoids border-collapse conflicts) */
+th.sat-sep,td.sat-sep{box-shadow:inset 3px 0 0 0 var(--gold)}
+th.sun-sep,td.sun-sep{box-shadow:inset -3px 0 0 0 var(--gold)}
+/* Weekday holiday left+right line */
+th.hol-wd,td.hol-wd{box-shadow:inset 2px 0 0 0 #9C27B0,inset -2px 0 0 0 #9C27B0}
 /* Past date styling */
 td.past-day .cell{color:#CACACA !important;cursor:default !important;pointer-events:none}
 td.past-day .cell.empty{color:#E0E0E0 !important}
