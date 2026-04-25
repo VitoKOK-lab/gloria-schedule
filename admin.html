@@ -344,13 +344,13 @@ tr.evt-training .sn-evt{color:#2E7D32}
 
   <!-- Step 2: Editor -->
   <div id="wiz-s3" style="display:none;flex-direction:column;height:calc(100vh - 54px - 44px)">
-    <div id="lockBanner" style="display:none;background:#B71C1C;color:#fff;padding:7px 20px;font-size:13px;font-weight:600;text-align:center">🔒 此月份已鎖定並發佈</div>
+    <div id="lockBanner" style="display:none;background:#B71C1C;color:#fff;padding:7px 20px;font-size:13px;font-weight:600;text-align:center">🔒 此月份已結束，無法修改</div>
     <div class="editor-toolbar">
       <button class="btn bd" onclick="wizGo(1)">← 修改員工名單</button>
       <div class="sep" style="width:1px;height:22px;background:#DDD;margin:0 4px"></div>
       <button class="btn bw" onclick="autoSchedule()">🎲 自動排班</button>
       <button class="btn bd" onclick="clearUnlocked()">🗑 清除未鎖定</button>
-      <button class="btn bd" id="lockBtn" onclick="toggleManualLock()">🔒 鎖定並發佈</button>
+      <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">📤 發佈班表</button>
       <div class="sep" style="width:1px;height:22px;background:#DDD;margin:0 4px"></div>
       <button class="btn bd" id="printBtn" onclick="printSchedule()" style="margin-left:auto">🖨️ 匯出簽核</button>
     </div>
@@ -494,7 +494,6 @@ const ST={
   fixedLocked:{},  // fixed day-off per staff – cannot be edited
   designatedOff:{}, // staffId -> Set<dayIdx> (monthly calendar picks)
   events:{audit:[],meeting:[],training:[]},
-  manualLock:false,
   swapReqs:[],
   history:[],
   dirty:false,
@@ -1248,34 +1247,14 @@ function renderSwapPanel(){
 // ═══════════════════════════════════════════════════
 function isLocked(month){
   if(!month) return false;
-  if(ST.manualLock) return true;
   const [y,m]=month.split('-').map(Number);
   return new Date()>=new Date(y,m,1);
-}
-function toggleManualLock(){
-  if(ST.manualLock){
-    if(!confirm('確定要解除鎖定？')) return;
-    ST.manualLock=false;
-    updateLockUI();
-    notify('🔓 已解除鎖定');
-  } else {
-    if(!confirm('確定要鎖定並發佈？鎖定後無法修改，並自動下載 JSON 檔案。')) return;
-    ST.manualLock=true;
-    updateLockUI();
-    notify('🔒 已鎖定，正在下載班表…');
-    downloadSchedule();
-  }
 }
 function updateLockUI(){
   const lk=isLocked(ST.currentMonth);
   const lb=document.getElementById('lockBanner');
   if(lb) lb.style.display=lk?'block':'none';
   document.querySelectorAll('.editor-toolbar .btn:not(#printBtn):not([onclick="wizGo(1)"])').forEach(b=>b.disabled=lk);
-  const lockBtn=document.getElementById('lockBtn');
-  if(lockBtn){
-    lockBtn.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定並發佈';
-    lockBtn.className=ST.manualLock?'btn br':'btn bd';
-  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -1338,7 +1317,7 @@ async function downloadSchedule(){
     ghPut('data/months.json',JSON.stringify({months:ST.months},null,2),'更新月份索引'),
     ghPut('data/staff.json',JSON.stringify({staff:ST.staff,rules:ST.rules},null,2),'更新員工資料'),
   ]);
-  if(btn){btn.disabled=false; btn.textContent='🚀 發佈班表';}
+  if(btn){btn.disabled=false; btn.textContent='📤 發佈班表';}
   if(ok1){
     // 下載本地備份（檔名加時間戳記）
     const ts=new Date().toISOString().slice(0,16).replace(/[-T:]/g,'').replace('T','_');
@@ -1351,7 +1330,7 @@ async function downloadSchedule(){
 }
 function buildSC(){
   const sc={month:ST.currentMonth,days:ST.days,daysOfWeek:ST.daysOfWeek,
-    holidays:ST.holidays,manualLock:ST.manualLock,events:ST.events,
+    holidays:ST.holidays,events:ST.events,
     staff:ST.monthStaff.map(s=>s.id),schedules:{},swapRequests:ST.swapReqs,
     designatedOff:Object.fromEntries(Object.entries(ST.designatedOff).map(([id,set])=>[id,[...set]]))};
   for(const s of ST.monthStaff) sc.schedules[s.id]=(ST.draft[s.id]||[]).map(x=>x||'');
@@ -1403,11 +1382,10 @@ async function loadResultMonth(m){
   document.querySelectorAll('.rm-item').forEach(el=>el.classList.toggle('active',el.dataset.m===m));
   document.getElementById('result-print-btn').style.display='inline-flex';
   await loadMonthData(m);
-  const lkLabel=ST.manualLock?'<span class="rm-lk">🔒</span>':'<span class="rm-nl">草稿</span>';
+  const lkLabel=isLocked(m)?'<span class="rm-lk">🔒</span>':'<span class="rm-nl">編輯中</span>';
   document.getElementById('result-title').innerHTML=`${m} 班表 &nbsp;${lkLabel}`;
-  // Update sidebar item to show lock
   const item=document.querySelector(`.rm-item[data-m="${m}"]`);
-  if(item) item.innerHTML=`${m} ${ST.manualLock?'<span class="rm-lk">🔒</span>':'<span class="rm-nl">草稿</span>'}`;
+  if(item) item.innerHTML=`${m} ${isLocked(m)?'<span class="rm-lk">🔒</span>':'<span class="rm-nl">編輯中</span>'}`;
   renderGrid('result-sg',true);
 }
 
@@ -1456,7 +1434,7 @@ function renderWizDOStep(){
 // ═══════════════════════════════════════════════════
 async function loadMonthData(month){
   ST.currentMonth=month;
-  ST.draft={};ST.locked={};ST.fixedLocked={};ST.designatedOff={};ST.history=[];ST.swapReqs=[];ST.holidays=[];ST.manualLock=false;
+  ST.draft={};ST.locked={};ST.fixedLocked={};ST.designatedOff={};ST.history=[];ST.swapReqs=[];ST.holidays=[];
   try{
     const sc=await fetch(`data/schedule_${month.replace('-','_')}.json?t=${Date.now()}`).then(r=>r.json());
     ST.daysOfWeek=sc.daysOfWeek; ST.days=sc.days;
@@ -1467,7 +1445,6 @@ async function loadMonthData(month){
       ST.locked[id]=new Set();
     }
     ST.swapReqs=sc.swapRequests||[];
-    ST.manualLock=sc.manualLock||false;
     if(sc.designatedOff){ for(const[id,days]of Object.entries(sc.designatedOff)) ST.designatedOff[id]=new Set(days); }
     const _n=sc.days.length;
     const _mk=arr=>Array.isArray(arr)&&arr.length===_n?arr.map(v=>v||''):new Array(_n).fill('');
