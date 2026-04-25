@@ -598,7 +598,14 @@ function computeViolations(){
       else{ if(streak>4){ viols.push({type:'error',code:'consec',msg:`${s.name} 連續上班 ${streak} 天（${ST.days[start]}-${ST.days[start+streak-1]}日）`,cells:Array.from({length:streak},(_,k)=>({s:s.id,d:start+k})),meta:{sid:s.id,start,streak}}); } streak=0; }
     }
   }
-  // 2. Trio co-rest
+  // 2. Holiday off count (假日最多1人休)
+  for(let i=0;i<ST.days.length;i++){
+    const dow=ST.daysOfWeek[i];
+    if(dow!=='Sat'&&dow!=='Sun') continue;
+    const offPpl=ST.monthStaff.filter(s=>isOff((ST.draft[s.id]||[])[i])&&(ST.draft[s.id]||[])[i]);
+    if(offPpl.length>1) viols.push({type:'error',code:'holoff',msg:`${ST.days[i]}日（週${DOW[dow]}）${offPpl.length}人同休（假日限1人）`,cells:offPpl.map(s=>({s:s.id,d:i})),meta:{day:i,ppl:offPpl}});
+  }
+  // 3. Trio co-rest
   const trio=(rules.noSimultaneousOff||[]).map(n=>ST.monthStaff.find(s=>s.id===n||s.name===n)).filter(Boolean);
   for(let i=0;i<ST.days.length;i++){
     const off=trio.filter(s=>isOff((ST.draft[s.id]||[])[i]));
@@ -669,6 +676,22 @@ function genSug(v){
       const mid=start+Math.floor(streak/2);
       return {text:`建議給 <b>${s.name}</b> 在 <b>${ST.days[mid]}日</b> 安排休假（RL），拆開連續工作段。`,
         apply:()=>setShift(sid,mid,'RL',true)};
+    }
+    case 'holoff':{
+      const {day,ppl}=v.meta;
+      const tgt=ppl.filter(s=>!ST.locked[s.id]?.has(day)).pop();
+      if(!tgt) return {text:'所有假日休假已鎖定，請手動調整。',apply:null};
+      for(let delta=1;delta<8;delta++){
+        for(const alt of [day+delta,day-delta]){
+          if(alt<0||alt>=ST.days.length) continue;
+          const dow=ST.daysOfWeek[alt];
+          if(dow==='Sat'||dow==='Sun') continue;
+          if(isWork((ST.draft[tgt.id]||[])[alt])&&!ST.locked[tgt.id]?.has(alt))
+            return {text:`建議將 <b>${tgt.name}</b> 的 ${ST.days[day]}日 假日休假移到 ${ST.days[alt]}日（週${DOW[dow]}），假日改為 P 晚班。`,
+              apply:()=>{setShift(tgt.id,day,'P',true);setShift(tgt.id,alt,'RL',true);}};
+        }
+      }
+      return {text:`建議將 <b>${tgt.name}</b> 的 ${ST.days[day]}日 假日休假改為 P 晚班。`,apply:()=>setShift(tgt.id,day,'P',true)};
     }
     case 'trio':{
       const {day,trio}=v.meta; const tgt=trio[trio.length-1];
@@ -799,10 +822,20 @@ function autoSchedule(){
   const shuffled=sfl([...ft]);
   const TARGET=ST.rules.daysOffPerMonth?.min||10;
   const MAXC=ST.rules.maxConsecutiveWorkDays||4;
+  const PREFC=3; // preferred consecutive work days
+  // Max off per day: weekend=1(規則), weekday=staff-minRequired
+  const minNeeded={weekday:4,friday:5,weekend:5};
+  const dailyOffCap=ST.daysOfWeek.map(dow=>{
+    if(dow==='Sat'||dow==='Sun') return 1; // 假日最多一人休
+    return Math.max(1, ft.length-(minNeeded[getDT(dow)]||4));
+  });
+  // Track off count per day (start from locked cells)
+  const dailyOff=new Array(n).fill(0);
+  for(const s of ft) for(let d=0;d<n;d++) if(sched[s.id][d]&&isOff(sched[s.id][d])) dailyOff[d]++;
   // Phase 1: off days
   for(const s of shuffled){
     const alreadyOff=sched[s.id].filter(x=>x&&isOff(x)).length;
-    placeOffDays(s.id,Math.max(0,TARGET-alreadyOff),sched,noCoOff,MAXC,n);
+    placeOffDays(s.id,Math.max(0,TARGET-alreadyOff),sched,noCoOff,MAXC,PREFC,n,dailyOff,dailyOffCap);
     for(let d=0;d<n;d++) if(sched[s.id][d]===null) sched[s.id][d]='__W';
   }
   // Phase 2: shift types
@@ -831,19 +864,19 @@ function autoSchedule(){
   renderGrid(); renderViolations(); renderStats();
   notify('自動排班完成，可手動調整');
 }
-function placeOffDays(sid,need,sched,noCoOff,maxC,n){
+function placeOffDays(sid,need,sched,noCoOff,maxC,prefC,n,dailyOff,dailyOffCap){
   const sc=sched[sid];
   const inTrio=noCoOff.includes(sid);
-  // Only count confirmed 'RL' for trio check (null = unassigned, not "off")
-  function canPlace(d){
+  function canPlace(d,relaxTrio,relaxCap){
     if(sc[d]!==null) return false;
-    if(inTrio){
+    if(!relaxCap&&dailyOff[d]>=dailyOffCap[d]) return false;
+    if(!relaxTrio&&inTrio){
       const co=noCoOff.filter(x=>x!==sid&&sched[x]&&sched[x][d]==='RL').length;
       if(co>=2) return false;
     }
     return true;
   }
-  // Find the longest run of consecutive work/unassigned days and return its midpoint
+  function placeAt(d){ sc[d]='RL'; dailyOff[d]++; }
   function longestRun(){
     let best={len:0,mid:0},runStart=0,runLen=0;
     for(let i=0;i<=n;i++){
@@ -855,23 +888,37 @@ function placeOffDays(sid,need,sched,noCoOff,maxC,n){
     return best;
   }
   let picked=0;
-  // First pass: break mandatory long runs (>maxC) by placing off at the midpoint
+  // Pass 1: break runs > preferred (3 days), full constraints
+  while(picked<need){
+    const {len,mid}=longestRun();
+    if(len<=prefC) break;
+    let placed=false;
+    for(let delta=0;delta<=len&&!placed;delta++){
+      for(const d of [mid-delta,mid+delta]){
+        if(d>=0&&d<n&&canPlace(d,false,false)){ placeAt(d); picked++; placed=true; break; }
+      }
+    }
+    if(!placed) break;
+  }
+  // Pass 2: break runs > hard max (4 days), relax cap if needed
   while(picked<need){
     const {len,mid}=longestRun();
     if(len<=maxC) break;
     let placed=false;
     for(let delta=0;delta<=len&&!placed;delta++){
       for(const d of [mid-delta,mid+delta]){
-        if(d>=0&&d<n&&canPlace(d)){ sc[d]='RL'; picked++; placed=true; break; }
+        if(d>=0&&d<n&&canPlace(d,false,true)){ placeAt(d); picked++; placed=true; break; }
       }
     }
-    if(!placed) break; // trio constraint blocking – give up mandatory pass
+    if(!placed) break;
   }
-  // Second pass: fill remaining off days randomly
+  // Pass 3: fill remaining randomly, full constraints
   const avail=sfl(Array.from({length:n},(_,i)=>i).filter(d=>sc[d]===null));
-  for(const d of avail){ if(picked>=need)break; if(canPlace(d)){sc[d]='RL';picked++;} }
-  // Relax trio constraint if still short
-  for(const d of avail){ if(picked>=need)break; if(sc[d]===null){sc[d]='RL';picked++;} }
+  for(const d of avail){ if(picked>=need)break; if(canPlace(d,false,false)){placeAt(d);picked++;} }
+  // Relax trio
+  for(const d of avail){ if(picked>=need)break; if(canPlace(d,true,false)){placeAt(d);picked++;} }
+  // Relax cap (last resort)
+  for(const d of avail){ if(picked>=need)break; if(sc[d]===null){placeAt(d);picked++;} }
 }
 function sfl(a){ for(let i=a.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
