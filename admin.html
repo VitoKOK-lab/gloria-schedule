@@ -241,7 +241,6 @@ tr.evt-training .sn-evt{color:#2E7D32}
   <div class="htabs">
     <button class="active" onclick="showPage('schedule')">📅 排班</button>
     <button onclick="showPage('staff')">👥 員工設定</button>
-    <button onclick="showPage('settings')">⚙️ 設定</button>
   </div>
   <div class="hright">
     <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
@@ -371,21 +370,6 @@ tr.evt-training .sn-evt{color:#2E7D32}
   </div>
 </div>
 
-<!-- ══ SETTINGS PAGE ══ -->
-<div id="page-settings" class="page">
-  <div class="spage">
-    <div class="wcard" style="margin-top:24px">
-      <div class="wcard-head"><div class="step" style="background:#607D8B">⚙</div><h2>GitHub 設定</h2></div>
-      <div class="wcard-body">
-        <div class="mf"><label>GitHub Personal Access Token（PAT）</label>
-          <input type="password" id="patIn" placeholder="ghp_xxxxxxxxxxxxxxxx">
-          <div style="font-size:11px;color:#999;margin-top:4px">只存在本機，不會傳到任何地方。需要 repo 寫入權限。</div></div>
-        <div class="mf"><label>Repo 路徑</label><input id="repoIn" value="VitoKOK-lab/gloria-schedule"></div>
-        <button class="btn bp" onclick="saveSettings()">💾 儲存</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Picker -->
 <div id="picker">
@@ -552,7 +536,6 @@ function getAutoHolidays(month){
 }
 
 async function init(){
-  loadSettings();
   try{
     const sd=await fetch('data/staff.json').then(r=>{if(!r.ok)throw new Error();return r.json();});
     ST.staff=sd.staff.map(s=>({...s}));
@@ -1400,44 +1383,12 @@ function gsAddStaff(){
 function gsRemove(i){ if(!confirm(`確定移除 ${ST.staff[i].name}？`))return; ST.staff.splice(i,1); renderGlobalStaff(); }
 function gsToggle(i){ ST.staff[i].type=ST.staff[i].type==='FT'?'PT':'FT'; renderGlobalStaff(); }
 function gsSetFixed(i,val){ ST.staff[i].fixedDayOff=val||null; renderGlobalStaff(); }
-async function saveGlobalStaff(){
-  const content=JSON.stringify({staff:ST.staff,rules:ST.rules},null,2);
-  const ok=await ghPut('data/staff.json',content,'更新員工資料');
-  notify(ok?'員工名單已儲存到 GitHub':'儲存失敗，請確認 Token',ok?'ok':'err');
+function saveGlobalStaff(){
+  dlJson('staff.json',{staff:ST.staff,rules:ST.rules});
+  notify('已下載 staff.json，放入 data/ 後 git push');
 }
 
-// ═══════════════════════════════════════════════════
-//  SETTINGS
-// ═══════════════════════════════════════════════════
-function loadSettings(){
-  document.getElementById('patIn').value=localStorage.getItem('gloria_pat')||'';
-  document.getElementById('repoIn').value=localStorage.getItem('gloria_repo')||'VitoKOK-lab/gloria-schedule';
-}
-function saveSettings(){
-  localStorage.setItem('gloria_pat',document.getElementById('patIn').value.trim());
-  localStorage.setItem('gloria_repo',document.getElementById('repoIn').value.trim());
-  notify('設定已儲存');
-}
-const getRepo=()=>localStorage.getItem('gloria_repo')||'VitoKOK-lab/gloria-schedule';
-const getPAT=()=>localStorage.getItem('gloria_pat')||'';
 
-// ═══════════════════════════════════════════════════
-//  GITHUB PUBLISH
-// ═══════════════════════════════════════════════════
-async function ghGetSHA(path){
-  const r=await fetch(`https://api.github.com/repos/${getRepo()}/contents/${path}`,{headers:{'Authorization':`token ${getPAT()}`}});
-  if(!r.ok)return null; return (await r.json()).sha||null;
-}
-async function ghPut(path,content,msg){
-  if(!getPAT()){notify('請先在設定頁面填入 GitHub Token','err');showPage('settings');return false;}
-  const sha=await ghGetSHA(path);
-  const body={message:msg,content:btoa(unescape(encodeURIComponent(content)))};
-  if(sha) body.sha=sha;
-  const r=await fetch(`https://api.github.com/repos/${getRepo()}/contents/${path}`,{
-    method:'PUT',headers:{'Authorization':`token ${getPAT()}`,'Content-Type':'application/json'},
-    body:JSON.stringify(body)});
-  return r.ok;
-}
 function dlJson(filename, data){
   const a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
@@ -1493,7 +1444,7 @@ function closeEvtPop(){document.getElementById('evtPop').classList.remove('show'
 function showPage(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('.htabs button').forEach((b,i)=>b.classList.toggle('active',['schedule','staff','settings'][i]===p));
+  document.querySelectorAll('.htabs button').forEach((b,i)=>b.classList.toggle('active',['schedule','staff'][i]===p));
 }
 function notify(msg,type=''){
   const el=document.createElement('div');el.className='ni'+(type?' '+type:'');el.textContent=msg;
