@@ -98,14 +98,14 @@ td.past-day .cell.empty{color:#E0E0E0 !important}
 .print-header{display:none;padding:0 0 8px 0;border-bottom:2px solid #CCC;margin-bottom:10px}
 @media print{
   @page{size:A3 landscape;margin:8mm}
-  header,#lockBanner,#histBanner,.mbar,.editor-toolbar,.sidebar,#evtPop,#picker{display:none !important}
+  header,.wiz-bar,.editor-toolbar,.sidebar,#evtPop,#picker,#lockBanner,.result-sidebar,.result-toolbar,.wiz-steps-ind,.htabs,.hright{display:none !important}
   .cell.vio{outline:none !important}.cell.vio::before{display:none !important}
   .cell.swap-req{outline:none !important}.cell.swap-req::before{display:none !important}
   .cell.fixed-off::after{display:none !important}
-  #page-schedule{display:block !important}
-  #editor{display:block !important;height:auto !important}
-  .editor-wrap{height:auto !important;overflow:visible !important;display:block !important}
-  .grid-scroll{overflow:visible !important;padding:4px !important}
+  #page-result,#page-schedule{display:block !important}
+  #wiz-s3{display:block !important;height:auto !important}
+  .result-main{display:block !important}
+  .result-grid-scroll,.grid-scroll{overflow:visible !important;padding:4px !important}
   table.sg{font-size:7px !important}
   table.sg th,table.sg td{padding:1px !important}
   .cell{height:18px !important;width:18px !important;min-width:18px !important;font-size:7px !important}
@@ -128,6 +128,7 @@ td.past-day .cell.empty{color:#E0E0E0 !important}
 .cell.locked::after{content:'🔒';position:absolute;top:0;right:1px;font-size:7px}
 .cell.fixed-off{background:#FFF8E1 !important;color:#E65100 !important;cursor:default}
 .cell.fixed-off::after{content:'📌';position:absolute;top:0;right:1px;font-size:7px}
+.cell.do-mark{box-shadow:inset 0 0 0 1.5px #E91E63;border-radius:3px}
 .cell.vio{outline:1px solid #F44336;outline-offset:-1px;border-radius:2px}
 .cell.vio::before{content:'✕';position:absolute;top:0;right:1px;font-size:7px;color:#F44336;line-height:1;font-weight:900}
 .cell.swap-req{outline:2px dashed var(--swap);outline-offset:-2px;border-radius:2px}
@@ -199,6 +200,31 @@ tr.evt-training .sn-evt{color:#2E7D32}
 /* Staff (settings) page */
 .spage{max-width:640px;margin:24px auto;padding:0 16px}
 
+/* ── Wizard step bar ── */
+.wiz-bar{background:#fff;border-bottom:1px solid #EEE;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.wiz-month{font-weight:700;font-size:15px;color:#333;white-space:nowrap}
+.wiz-steps-ind{display:flex;align-items:center;gap:6px}
+.ws{padding:4px 14px;border-radius:14px;font-size:12px;font-weight:600;color:#AAA;background:#F0F0F0;transition:.2s;white-space:nowrap}
+.ws.ws-active{background:var(--accent);color:#fff}
+.ws-arr{color:#CCC;font-size:11px}
+/* ── Result page ── */
+.result-sidebar{width:150px;border-right:1px solid #E0E0E0;background:#fff;flex-shrink:0;overflow-y:auto}
+.result-sb-head{padding:10px 14px;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;background:var(--cream);border-bottom:1px solid #EEE}
+.rm-item{padding:9px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid #F5F5F5;color:#333;transition:background .15s;font-weight:500;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.rm-item:hover{background:#F5F5F5}
+.rm-item.active{background:#EDE0FA;color:#6A1B9A;font-weight:700}
+.rm-lk{font-size:9px;background:#6A1B9A;color:#fff;border-radius:3px;padding:1px 4px;white-space:nowrap}
+.rm-nl{font-size:9px;background:#E0E0E0;color:#666;border-radius:3px;padding:1px 4px;white-space:nowrap}
+.result-main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.result-toolbar{padding:10px 16px;border-bottom:1px solid #EEE;display:flex;align-items:center;gap:10px;flex-shrink:0;background:#fff}
+.result-grid-scroll{flex:1;overflow:auto;padding:12px}
+/* DO locked cell (step 3) */
+.cell.do-locked{background:#FCE4EC !important;color:#AD1457 !important;cursor:not-allowed !important;box-shadow:inset 0 0 0 1.5px #E91E63;border-radius:3px}
+.cell.do-locked::after{content:'📅';position:absolute;top:0;right:1px;font-size:7px}
+/* Step 2 DO list */
+.do-list-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F5F5F5}
+.do-list-row:last-child{border-bottom:none}
+
 /* Notif */
 #notif{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
 .ni{background:#323232;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;box-shadow:0 3px 12px rgba(0,0,0,.25);animation:sli .2s ease;pointer-events:auto}
@@ -242,7 +268,8 @@ tr.evt-training .sn-evt{color:#2E7D32}
 <header>
   <h1>GLORIA <span>MK</span></h1>
   <div class="htabs">
-    <button class="active" onclick="showPage('schedule')">📅 排班</button>
+    <button class="active" onclick="showPage('result')">📋 班表</button>
+    <button onclick="showPage('schedule')">🗓 排班</button>
     <button onclick="showPage('staff')">👥 員工設定</button>
   </div>
   <div class="hright">
@@ -251,34 +278,58 @@ tr.evt-training .sn-evt{color:#2E7D32}
     <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">🚀 發佈班表</button>
   </div>
 </header>
-<div id="lockBanner">🔒 此月份已超過次月1日，無法再修改</div>
-<div id="histBanner" style="display:none;background:#4A148C;color:#fff;padding:7px 20px;font-size:13px;font-weight:600;text-align:center">📚 歷史班表唯讀模式：<span id="histBannerMonth"></span> &nbsp;<button onclick="exitHistMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:12px">✕ 返回現在</button></div>
+<!-- ══ RESULT PAGE ══ -->
+<div id="page-result" class="page active">
+  <div style="display:flex;height:calc(100vh - 54px)">
+    <div class="result-sidebar">
+      <div class="result-sb-head">班表記錄</div>
+      <div id="result-month-list"><div style="padding:12px 14px;font-size:12px;color:#AAA">載入中…</div></div>
+    </div>
+    <div class="result-main">
+      <div class="result-toolbar">
+        <div id="result-title" style="font-size:15px;font-weight:700;color:#555">← 選擇月份查看</div>
+        <button class="btn bd" onclick="printSchedule()" id="result-print-btn" style="display:none;margin-left:auto">🖨️ 匯出簽核</button>
+      </div>
+      <div class="result-grid-scroll">
+        <div class="print-header">
+          <div style="font-size:18px;font-weight:700;letter-spacing:1px">GLORIA MK 班表</div>
+          <div style="font-size:14px;margin-top:4px;font-weight:600"><span id="printMonthLabel"></span></div>
+          <div style="font-size:11px;color:#888;margin-top:2px">列印日期：<span id="printDateLabel"></span></div>
+        </div>
+        <table class="sg" id="result-sg"></table>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ SCHEDULE PAGE ══ -->
-<div id="page-schedule" class="page active">
+<div id="page-schedule" class="page">
 
-  <!-- Month bar -->
-  <div class="mbar">
-    <button class="btn bd" onclick="prevMonth()">‹</button>
-    <select id="monthSel" onchange="onMonthChange()" style="font-size:15px;font-weight:700;padding:5px 12px;border-radius:8px;border:1px solid #CCC;color:var(--accent)"></select>
-    <button class="btn bd" onclick="nextMonth()">›</button>
-    <button class="btn bw" onclick="showNewMonthModal()">＋ 新月份</button>
-    <button class="btn bd" id="lockBtn" onclick="toggleManualLock()">🔒 鎖定此月</button>
-    <div class="sep"></div>
-    <span id="mbar-status" style="font-size:12px;color:#888"></span>
+  <!-- Wizard step bar -->
+  <div class="wiz-bar">
+    <div class="wiz-month" id="wiz-month-label">—</div>
+    <div class="wiz-steps-ind">
+      <span class="ws ws1 ws-active">① 員工名單</span>
+      <span class="ws-arr">▶</span>
+      <span class="ws ws2">② 指定休假</span>
+      <span class="ws-arr">▶</span>
+      <span class="ws ws3">③ 排班</span>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
+      <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">🚀 發佈班表</button>
+    </div>
   </div>
 
-  <!-- WIZARD (shown when month has no data) -->
-  <div id="wizard" style="display:none">
+  <!-- Step 1: Staff -->
+  <div id="wiz-s1">
     <div class="wizard">
-
-      <!-- Step 1: Staff -->
       <div class="wcard">
         <div class="wcard-head">
           <div class="step">1</div>
           <div>
             <h2>確認本月員工名單</h2>
-            <div style="font-size:12px;color:#888;margin-top:2px">已從系統載入員工，可新增或移除</div>
+            <div style="font-size:12px;color:#888;margin-top:2px">已從系統載入員工，可新增或移除本月出勤人員</div>
           </div>
           <button class="btn bw" onclick="copyPrevStaff()" style="margin-left:auto">📋 沿用上月</button>
         </div>
@@ -289,43 +340,43 @@ tr.evt-training .sn-evt{color:#2E7D32}
             <select id="wizType"><option value="FT">正職 FT</option><option value="PT">兼職 PT</option></select>
             <button class="btn bp" onclick="wizAddStaff()">＋ 新增</button>
           </div>
+          <button class="wbig" onclick="wizGo(2)" style="margin-top:16px">確認名單，下一步：指定休假 →</button>
         </div>
       </div>
-
-      <!-- Step 2: Auto-schedule -->
-      <div class="wcard">
-        <div class="wcard-head">
-          <div class="step">2</div>
-          <h2>自動排班</h2>
-        </div>
-        <div class="wcard-body">
-          <div style="color:#555;font-size:13px;margin-bottom:14px;line-height:1.6">
-            系統會依照以下規則自動排班：<br>
-            ✔ 每人 10-11 天休假 &nbsp;✔ 早班人數平均<br>
-            ✔ 最多連續 4 天上班 &nbsp;✔ Wiggie/LIV/Demi 不同休<br>
-            ✔ 平日1早3晚、週五1早1中3晚、假日1早1中3晚
-          </div>
-          <button class="wbig auto" onclick="wizAutoAndGo()">🎲 自動排班並開始編輯</button>
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <!-- EDITOR (shown when month has data) -->
-  <div id="editor" style="display:none;flex-direction:column;height:calc(100vh - 105px)">
-    <div class="print-header">
-      <div style="font-size:18px;font-weight:700;letter-spacing:1px">GLORIA MK 班表</div>
-      <div style="font-size:14px;margin-top:4px;font-weight:600"><span id="printMonthLabel"></span></div>
-      <div style="font-size:11px;color:#888;margin-top:2px">列印日期：<span id="printDateLabel"></span></div>
+  <!-- Step 2: Designated Off -->
+  <div id="wiz-s2" style="display:none">
+    <div class="wizard">
+      <div class="wcard">
+        <div class="wcard-head">
+          <div class="step">2</div>
+          <h2>指定休假日</h2>
+        </div>
+        <div class="wcard-body">
+          <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6">為每位員工設定本月指定休假日。<br>進入排班後這些日期將被鎖定，如需修改請回到此步驟。</div>
+          <div id="wiz-do-list"></div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn bd" onclick="wizGo(1)">← 上一步</button>
+            <button class="wbig" onclick="wizGo(3)" style="flex:1;margin-top:0">確認指定休假，進入排班 →</button>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- Step 3: Editor -->
+  <div id="wiz-s3" style="display:none;flex-direction:column;height:calc(100vh - 54px - 44px)">
+    <div id="lockBanner" style="display:none;background:#B71C1C;color:#fff;padding:7px 20px;font-size:13px;font-weight:600;text-align:center">🔒 此月份已鎖定並發佈</div>
     <div class="editor-toolbar">
-      <button class="btn bw" onclick="autoSchedule()">🎲 重新自動排班</button>
-      <button class="btn bd" onclick="openStaffDoModal()">📅 指定休假日</button>
+      <button class="btn bd" onclick="wizGo(2)">← 修改指定休假</button>
+      <div class="sep" style="width:1px;height:22px;background:#DDD;margin:0 4px"></div>
+      <button class="btn bw" onclick="autoSchedule()">🎲 自動排班</button>
       <button class="btn bd" onclick="clearUnlocked()">🗑 清除未鎖定</button>
+      <button class="btn bd" id="lockBtn" onclick="toggleManualLock()">🔒 鎖定並發佈</button>
       <div class="sep" style="width:1px;height:22px;background:#DDD;margin:0 4px"></div>
       <button class="btn bd" id="printBtn" onclick="printSchedule()" style="margin-left:auto">🖨️ 匯出簽核</button>
-      <span style="font-size:11px;color:#888">點格子選班別・🔒格為手動鎖定・可拖拉兩格互換</span>
     </div>
     <div style="display:flex;flex:1;overflow:hidden">
       <div class="grid-scroll"><table class="sg" id="sg"></table></div>
@@ -341,10 +392,6 @@ tr.evt-training .sn-evt{color:#2E7D32}
         <div class="sb-sec">
           <div class="sb-head" onclick="toggleSb('stat')">📊 班別統計</div>
           <div class="sb-body" id="sb-stat"><div id="statsBox"></div></div>
-        </div>
-        <div class="sb-sec">
-          <div class="sb-head" onclick="toggleSb('hist')">📚 歷史班表</div>
-          <div class="sb-body" id="sb-hist" style="display:block"></div>
         </div>
       </div>
     </div>
@@ -520,8 +567,8 @@ function isPastDate(dayIdx){
   return new Date(y,mo-1,ST.days[dayIdx])<today;
 }
 function printSchedule(){
-  document.getElementById('printMonthLabel').textContent=ST.currentMonth+' 班表';
-  document.getElementById('printDateLabel').textContent=new Date().toLocaleDateString('zh-TW');
+  document.querySelectorAll('#printMonthLabel').forEach(el=>el.textContent=(ST.currentMonth||'')+' 班表');
+  document.querySelectorAll('#printDateLabel').forEach(el=>el.textContent=new Date().toLocaleDateString('zh-TW'));
   window.print();
 }
 
@@ -550,117 +597,20 @@ async function init(){
   try{
     const idx=await fetch('data/months.json').then(r=>{if(!r.ok)throw new Error();return r.json();});
     ST.months=[...idx.months];
-  } catch(e){ ST.months=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06']; }
-  buildMonthSel();
-  const tm=todayMonth();
-  const active=ST.months.filter(m=>m>=tm);
-  const latest=active.length?active[0]:ST.months[ST.months.length-1];
-  document.getElementById('monthSel').value=latest;
-  await loadMonth(latest);
+  } catch(e){ ST.months=['2026-01','2026-02','2026-03','2026-04']; }
   renderGlobalStaff();
+  await loadResultPage();
 }
 
 // ═══════════════════════════════════════════════════
 //  MONTH
 // ═══════════════════════════════════════════════════
 function todayMonth(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
-function buildMonthSel(){
-  const sel=document.getElementById('monthSel');
-  const tm=todayMonth();
-  sel.innerHTML=ST.months.filter(m=>m>=tm).map(m=>`<option value="${m}">${m}</option>`).join('');
-}
-function renderHistPanel(){
-  const tm=todayMonth();
-  const past=[...ST.months].filter(m=>m<tm).reverse();
-  const box=document.getElementById('sb-hist');
-  if(!box) return;
-  if(!past.length){box.innerHTML='<div style="padding:10px 14px;font-size:12px;color:#AAA">無歷史班表</div>';return;}
-  box.innerHTML=past.map(m=>`<div class="sb-hist-item${ST.currentMonth===m?' active':''}" onclick="loadHistMonth('${m}')">${m}<span class="sb-hist-lk">🔒 歷史</span></div>`).join('');
-}
-async function loadHistMonth(m){
-  await loadMonth(m);
-  document.getElementById('histBanner').style.display='block';
-  document.getElementById('histBannerMonth').textContent=m;
-}
-function exitHistMode(){
-  document.getElementById('histBanner').style.display='none';
-  const tm=todayMonth();
-  const active=ST.months.filter(m=>m>=tm);
-  const target=active[active.length-1]||ST.months[ST.months.length-1];
-  document.getElementById('monthSel').value=target;
-  loadMonth(target);
-}
-function onMonthChange(){
-  document.getElementById('histBanner').style.display='none';
-  loadMonth(document.getElementById('monthSel').value);
-}
-function prevMonth(){
-  const tm=todayMonth();const active=ST.months.filter(m=>m>=tm);
-  const i=active.indexOf(ST.currentMonth);
-  if(i>0){document.getElementById('histBanner').style.display='none';document.getElementById('monthSel').value=active[i-1];loadMonth(active[i-1]);}
-}
-function nextMonth(){
-  const tm=todayMonth();const active=ST.months.filter(m=>m>=tm);
-  const i=active.indexOf(ST.currentMonth);
-  if(i<active.length-1){document.getElementById('histBanner').style.display='none';document.getElementById('monthSel').value=active[i+1];loadMonth(active[i+1]);}
-}
-
-async function loadMonth(month){
-  ST.currentMonth=month;
-  ST.draft={};ST.locked={};ST.fixedLocked={};ST.designatedOff={};ST.history=[];ST.swapReqs=[];ST.holidays=[];ST.manualLock=false;
-  updateHistBadge(); updateLockUI();
-  document.getElementById('mbar-status').textContent='載入中…';
-  let hasData=false;
-  try{
-    const sc=await fetch(`data/schedule_${month.replace('-','_')}.json?t=${Date.now()}`).then(r=>r.json());
-    ST.daysOfWeek=sc.daysOfWeek; ST.days=sc.days;
-    ST.holidays=(sc.holidays&&sc.holidays.length>0)?sc.holidays:getAutoHolidays(month);
-    ST.monthStaff=(sc.staff||[]).map(id=>ST.staff.find(s=>s.id===id)||{id,name:id,type:'FT'});
-    for(const id of (sc.staff||[])){
-      ST.draft[id]=[...(sc.schedules[id]||[])];
-      ST.locked[id]=new Set();
-    }
-    ST.swapReqs=sc.swapRequests||[];
-    ST.manualLock=sc.manualLock||false;
-    ST.designatedOff={};
-    if(sc.designatedOff){ for(const[id,days]of Object.entries(sc.designatedOff)) ST.designatedOff[id]=new Set(days); }
-    const _n=sc.days.length;
-    const _mk=arr=>Array.isArray(arr)&&arr.length===_n?arr.map(v=>v||''):new Array(_n).fill('');
-    ST.events={audit:_mk((sc.events||{}).audit),meeting:_mk((sc.events||{}).meeting),training:_mk((sc.events||{}).training)};
-    hasData=true;
-    document.getElementById('mbar-status').textContent='';
-  } catch(e){
-    const [y,mo]=month.split('-').map(Number);
-    const dim=new Date(y,mo,0).getDate();
-    ST.days=Array.from({length:dim},(_,i)=>i+1);
-    ST.daysOfWeek=calcDOW(y,mo,dim);
-    ST.holidays=getAutoHolidays(month);
-    ST.monthStaff=ST.staff.map(s=>({...s}));
-    for(const s of ST.monthStaff){ ST.draft[s.id]=new Array(dim).fill(null); ST.locked[s.id]=new Set(); }
-    ST.events={audit:new Array(dim).fill(''),meeting:new Array(dim).fill(''),training:new Array(dim).fill('')};
-    document.getElementById('mbar-status').textContent='尚無班表';
-  }
-  applyFixedLocked();
-  renderHistPanel();
-  if(hasData){ showEditor(); } else { showWizard(); }
-}
-
 function calcDOW(y,mo,days){
   const ns=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   return Array.from({length:days},(_,i)=>ns[new Date(y,mo-1,i+1).getDay()]);
 }
 function getDT(dow){ return dow==='Sat'||dow==='Sun'?'weekend':dow==='Fri'?'friday':'weekday'; }
-
-function showWizard(){
-  document.getElementById('wizard').style.display='block';
-  document.getElementById('editor').style.display='none';
-  renderWizStaff();
-}
-function showEditor(){
-  document.getElementById('wizard').style.display='none';
-  document.getElementById('editor').style.display='flex';
-  renderGrid(); renderViolations(); renderStats(); renderSwapPanel();
-}
 
 // ═══════════════════════════════════════════════════
 //  WIZARD
@@ -707,9 +657,11 @@ function wizToggleType(i){
   ST.monthStaff[i].type=ST.monthStaff[i].type==='FT'?'PT':'FT'; renderWizStaff();
 }
 async function copyPrevStaff(){
-  const idx=ST.months.indexOf(ST.currentMonth);
+  const sorted=[...ST.months].sort();
+  const idx=sorted.indexOf(ST.currentMonth);
   if(idx<=0){ notify('沒有上個月的資料','err'); return; }
-  const prev=ST.months[idx-1];
+  ST.months=sorted; // ensure sorted
+  const prev=sorted[idx-1];
   try{
     const sc=await fetch(`data/schedule_${prev.replace('-','_')}.json`).then(r=>r.json());
     const prevStaff=(sc.staff||[]).map(id=>ST.staff.find(s=>s.id===id)||{id,name:id,type:'FT'});
@@ -764,7 +716,7 @@ function renderStaffDoList(){
 }
 function openStaffDoModal(){ renderStaffDoList(); document.getElementById('staffDoModal').classList.add('show'); }
 function toggleDoDay(idx){ if(_doSel.has(idx))_doSel.delete(idx);else _doSel.add(idx); renderDoGrid(); }
-function saveDesignatedOff(){ ST.designatedOff[_doStaff]=new Set(_doSel); closeDoModal(); renderWizStaff(); renderStaffDoList(); notify('已儲存指定休假日'); }
+function saveDesignatedOff(){ ST.designatedOff[_doStaff]=new Set(_doSel); closeDoModal(); renderWizStaff(); renderWizDOStep(); notify('已儲存指定休假日'); }
 function closeDoModal(){ document.getElementById('doModal').classList.remove('show'); _doStaff=null; }
 
 // ═══════════════════════════════════════════════════
@@ -792,7 +744,7 @@ function updateHistBadge(){
 // ═══════════════════════════════════════════════════
 //  GRID
 // ═══════════════════════════════════════════════════
-function renderGrid(){
+function renderGrid(containerId='sg',readOnly=false){
   const req=ST.rules.staffingRequirements||{weekday:{A:1,M:0,P:3},friday:{A:1,M:1,P:3},weekend:{A:1,M:1,P:3}};
   const vioSet=buildVioSet();
   let h='<thead><tr><th class="sn">姓名</th>';
@@ -833,17 +785,23 @@ function renderGrid(){
       const isLk=!isFixed&&lk.has(i);
       const vio=!isFixed&&vioSet[s.id]?.has(i);
       const hasSwap=ST.swapReqs.some(r=>r.staffId===s.id&&r.dayIdx===i&&r.status==='pending');
-      const cls=[sh||'empty',isFixed?'fixed-off':isLk?'locked':'',vio?'vio':'',hasSwap?'swap-req':''].filter(Boolean).join(' ');
+      const isDo=!isFixed&&(ST.designatedOff[s.id]||new Set()).has(i);
+      const isDoLocked=isDo&&!readOnly; // locked in editor, shown as do-mark in result
+      const cls=[sh||'empty',isFixed?'fixed-off':isLk?'locked':'',vio?'vio':'',hasSwap?'swap-req':'',isDoLocked?'do-locked':isDo?'do-mark':''].filter(Boolean).join(' ');
       const isPast=isPastDate(i);
       const tdCls=isPast?'past-day':'';
-      h+=`<td class="${tdCls}"><div class="cell ${cls}"
-        draggable="${!isFixed}" data-s="${s.id}" data-d="${i}"
-        onclick="openPicker('${s.id}',${i},event)"
-        ondragstart="onDS('${s.id}',${i})"
-        ondragover="onDO(event)"
-        ondrop="onDrop('${s.id}',${i},event)"
-        ondragleave="onDL(event)"
-      >${sh||'—'}</div></td>`;
+      if(readOnly){
+        h+=`<td class="${tdCls}"><div class="cell ${cls}">${sh||'—'}</div></td>`;
+      } else {
+        h+=`<td class="${tdCls}"><div class="cell ${cls}"
+          draggable="${!isFixed&&!isDoLocked}" data-s="${s.id}" data-d="${i}"
+          onclick="openPicker('${s.id}',${i},event)"
+          ondragstart="onDS('${s.id}',${i})"
+          ondragover="onDO(event)"
+          ondrop="onDrop('${s.id}',${i},event)"
+          ondragleave="onDL(event)"
+        >${sh||'—'}</div></td>`;
+      }
     }
     h+=`<td style="font-size:10px;color:var(--A);font-weight:700">${A}</td><td style="font-size:10px;color:var(--M);font-weight:700">${M}</td><td style="font-size:10px;color:var(--P);font-weight:700">${P}</td><td style="font-size:10px;color:var(--RL);font-weight:700">${off}</td></tr>`;
   }
@@ -859,7 +817,8 @@ function renderGrid(){
     h+='<td colspan="4"></td></tr>';
   }
   h+='</tbody>';
-  document.getElementById('sg').innerHTML=h;
+  const el=document.getElementById(containerId);
+  if(el) el.innerHTML=h;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1078,7 +1037,10 @@ function openPicker(sid,day,e){
   if(isPastDate(day)){ return; }
   if(ST.fixedLocked[sid]?.has(day)){
     const s=ST.monthStaff.find(x=>x.id===sid);
-    notify(`${s?.name} ${ST.days[day]}日為指定固定休假日（📌），無法修改`,'err'); return;
+    notify(`${s?.name} ${ST.days[day]}日為固定休假日（📌），無法修改`,'err'); return;
+  }
+  if((ST.designatedOff[sid]||new Set()).has(day)){
+    notify('指定休假日已鎖定，請按「← 修改指定休假」回上一步調整','err'); return;
   }
   pkStaff=sid; pkDay=day;
   const s=ST.monthStaff.find(x=>x.id===sid);
@@ -1121,6 +1083,9 @@ function onDrop(s,d,e){
   if(isPastDate(dragD)||isPastDate(d)){ notify('過去日期無法修改','err'); dragS=null; return; }
   if(ST.fixedLocked[dragS]?.has(dragD)||ST.fixedLocked[s]?.has(d)){
     notify('固定休假日（📌）無法拖拉調換','err'); dragS=null; return;
+  }
+  if((ST.designatedOff[dragS]||new Set()).has(dragD)||(ST.designatedOff[s]||new Set()).has(d)){
+    notify('指定休假日已鎖定，無法拖拉','err'); dragS=null; return;
   }
   const s1=(ST.draft[dragS]||[])[dragD]; const s2=(ST.draft[s]||[])[d];
   if(dragD!==d){ notify('只能和同一天的人換班','err'); dragS=null; return; }
@@ -1330,15 +1295,13 @@ function toggleManualLock(){
 }
 function updateLockUI(){
   const lk=isLocked(ST.currentMonth);
-  const timeLk=ST.currentMonth&&(()=>{const[y,m]=ST.currentMonth.split('-').map(Number);return new Date()>=new Date(y,m,1);})();
-  document.getElementById('lockBanner').style.display=lk?'block':'none';
-  // download always available
-  document.querySelectorAll('.editor-toolbar .btn:not(#printBtn)').forEach(b=>b.disabled=lk);
-  const lb=document.getElementById('lockBtn');
-  if(lb){
-    lb.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定並發佈';
-    lb.className=ST.manualLock?'btn br':'btn bd';
-    lb.disabled=timeLk; // can't unlock time-based lock
+  const lb=document.getElementById('lockBanner');
+  if(lb) lb.style.display=lk?'block':'none';
+  document.querySelectorAll('.editor-toolbar .btn:not(#printBtn):not([onclick="wizGo(2)"])').forEach(b=>b.disabled=lk);
+  const lockBtn=document.getElementById('lockBtn');
+  if(lockBtn){
+    lockBtn.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定並發佈';
+    lockBtn.className=ST.manualLock?'btn br':'btn bd';
   }
 }
 
@@ -1353,11 +1316,10 @@ function showNewMonthModal(){
 async function createMonth(){
   const m=document.getElementById('nmInput').value.trim();
   if(!/^\d{4}-\d{2}$/.test(m)){notify('格式錯誤，請輸入 YYYY-MM','err');return;}
-  if(m<todayMonth()){notify('無法新增過去月份，請從側欄「歷史班表」查閱','err');return;}
-  if(!ST.months.includes(m)) ST.months.push(m);
-  buildMonthSel(); document.getElementById('monthSel').value=m;
-  document.getElementById('histBanner').style.display='none';
-  closeModal('newMonthModal'); await loadMonth(m);
+  if(!ST.months.includes(m)){ST.months.push(m);ST.months.sort();}
+  closeModal('newMonthModal');
+  await loadResultPage();
+  await loadResultMonth(m);
 }
 function toggleSb(id){
   const b=document.getElementById('sb-'+id);
@@ -1425,13 +1387,13 @@ async function downloadSchedule(){
   if(!ST.currentMonth){notify('請先選擇月份','err');return;}
   const sc=buildSC();
   const btn=document.getElementById('pubBtn');
-  btn.textContent='發佈中…'; btn.disabled=true;
+  if(btn){btn.textContent='發佈中…'; btn.disabled=true;}
   const [ok1,ok2,ok3]=await Promise.all([
     ghPut(`data/schedule_${ST.currentMonth.replace('-','_')}.json`,JSON.stringify(sc,null,2),`更新 ${ST.currentMonth} 班表`),
     ghPut('data/months.json',JSON.stringify({months:ST.months},null,2),'更新月份索引'),
     ghPut('data/staff.json',JSON.stringify({staff:ST.staff,rules:ST.rules},null,2),'更新員工資料'),
   ]);
-  btn.disabled=false; btn.textContent='🚀 發佈班表';
+  if(btn){btn.disabled=false; btn.textContent='🚀 發佈班表';}
   if(ok1){
     // 下載本地備份（檔名加時間戳記）
     const ts=new Date().toISOString().slice(0,16).replace(/[-T:]/g,'').replace('T','_');
@@ -1445,7 +1407,8 @@ async function downloadSchedule(){
 function buildSC(){
   const sc={month:ST.currentMonth,days:ST.days,daysOfWeek:ST.daysOfWeek,
     holidays:ST.holidays,manualLock:ST.manualLock,events:ST.events,
-    staff:ST.monthStaff.map(s=>s.id),schedules:{},swapRequests:ST.swapReqs};
+    staff:ST.monthStaff.map(s=>s.id),schedules:{},swapRequests:ST.swapReqs,
+    designatedOff:Object.fromEntries(Object.entries(ST.designatedOff).map(([id,set])=>[id,[...set]]))};
   for(const s of ST.monthStaff) sc.schedules[s.id]=(ST.draft[s.id]||[]).map(x=>x||'');
   return sc;
 }
@@ -1482,12 +1445,114 @@ function clearEvt(){
 function closeEvtPop(){document.getElementById('evtPop').classList.remove('show');_evtType=_evtDay=null;}
 
 // ═══════════════════════════════════════════════════
+//  RESULT PAGE
+// ═══════════════════════════════════════════════════
+async function loadResultPage(){
+  const sorted=[...ST.months].sort().reverse();
+  document.getElementById('result-month-list').innerHTML=sorted.length
+    ? sorted.map(m=>`<div class="rm-item" data-m="${m}" onclick="loadResultMonth('${m}')">${m}</div>`).join('')
+    : '<div style="padding:12px 14px;font-size:12px;color:#AAA">尚無班表</div>';
+  if(sorted.length) await loadResultMonth(sorted[0]);
+}
+async function loadResultMonth(m){
+  document.querySelectorAll('.rm-item').forEach(el=>el.classList.toggle('active',el.dataset.m===m));
+  document.getElementById('result-print-btn').style.display='inline-flex';
+  await loadMonthData(m);
+  const lkLabel=ST.manualLock?'<span class="rm-lk">🔒</span>':'<span class="rm-nl">草稿</span>';
+  document.getElementById('result-title').innerHTML=`${m} 班表 &nbsp;${lkLabel}`;
+  // Update sidebar item to show lock
+  const item=document.querySelector(`.rm-item[data-m="${m}"]`);
+  if(item) item.innerHTML=`${m} ${ST.manualLock?'<span class="rm-lk">🔒</span>':'<span class="rm-nl">草稿</span>'}`;
+  renderGrid('result-sg',true);
+}
+
+// ═══════════════════════════════════════════════════
+//  SCHEDULE WIZARD
+// ═══════════════════════════════════════════════════
+function getNextSchedMonth(){
+  const [y,m]=todayMonth().split('-').map(Number);
+  return m===12?`${y+1}-01`:`${y}-${String(m+1).padStart(2,'0')}`;
+}
+async function initSchedulePage(){
+  const nm=getNextSchedMonth();
+  document.getElementById('wiz-month-label').textContent=nm+' 排班設定';
+  if(!ST.months.includes(nm)) ST.months.push(nm);
+  await loadMonthData(nm);
+  updateHistBadge();
+  updateLockUI();
+  renderWizStaff();
+  wizGo(1);
+}
+function wizGo(step){
+  ST.wizStep=step;
+  document.getElementById('wiz-s1').style.display=step===1?'':'none';
+  document.getElementById('wiz-s2').style.display=step===2?'':'none';
+  document.getElementById('wiz-s3').style.display=step===3?'flex':'none';
+  ['ws1','ws2','ws3'].forEach((c,i)=>document.querySelector('.'+c)?.classList.toggle('ws-active',i+1===step));
+  if(step===2) renderWizDOStep();
+  if(step===3){
+    applyFixedLocked();
+    const hasSchedule=ST.monthStaff.some(s=>(ST.draft[s.id]||[]).some(x=>x&&x!=='RL'));
+    if(!hasSchedule) autoSchedule();
+    else { renderGrid(); renderViolations(); renderStats(); renderSwapPanel(); }
+  }
+}
+function renderWizDOStep(){
+  document.getElementById('wiz-do-list').innerHTML=ST.monthStaff.map(s=>{
+    const cnt=(ST.designatedOff[s.id]||new Set()).size;
+    return `<div class="do-list-row">
+      <span style="flex:1;font-weight:600">${s.name}</span>
+      <button class="btn bd" onclick="openDoModal('${s.id}')" style="padding:3px 12px;font-size:11px">${cnt?`<b style="color:#C62828">已選 ${cnt} 天</b>`:'選擇日期'}</button>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  MONTH DATA LOADER
+// ═══════════════════════════════════════════════════
+async function loadMonthData(month){
+  ST.currentMonth=month;
+  ST.draft={};ST.locked={};ST.fixedLocked={};ST.designatedOff={};ST.history=[];ST.swapReqs=[];ST.holidays=[];ST.manualLock=false;
+  try{
+    const sc=await fetch(`data/schedule_${month.replace('-','_')}.json?t=${Date.now()}`).then(r=>r.json());
+    ST.daysOfWeek=sc.daysOfWeek; ST.days=sc.days;
+    ST.holidays=(sc.holidays&&sc.holidays.length>0)?sc.holidays:getAutoHolidays(month);
+    ST.monthStaff=(sc.staff||[]).map(id=>ST.staff.find(s=>s.id===id)||{id,name:id,type:'FT'});
+    for(const id of (sc.staff||[])){
+      ST.draft[id]=[...(sc.schedules[id]||[])];
+      ST.locked[id]=new Set();
+    }
+    ST.swapReqs=sc.swapRequests||[];
+    ST.manualLock=sc.manualLock||false;
+    if(sc.designatedOff){ for(const[id,days]of Object.entries(sc.designatedOff)) ST.designatedOff[id]=new Set(days); }
+    const _n=sc.days.length;
+    const _mk=arr=>Array.isArray(arr)&&arr.length===_n?arr.map(v=>v||''):new Array(_n).fill('');
+    ST.events={audit:_mk((sc.events||{}).audit),meeting:_mk((sc.events||{}).meeting),training:_mk((sc.events||{}).training)};
+    applyFixedLocked();
+    return true;
+  } catch(e){
+    const [y,mo]=month.split('-').map(Number);
+    const dim=new Date(y,mo,0).getDate();
+    ST.days=Array.from({length:dim},(_,i)=>i+1);
+    ST.daysOfWeek=calcDOW(y,mo,dim);
+    ST.holidays=getAutoHolidays(month);
+    ST.monthStaff=ST.staff.map(s=>({...s}));
+    for(const s of ST.monthStaff){ ST.draft[s.id]=new Array(dim).fill(null); ST.locked[s.id]=new Set(); }
+    ST.events={audit:new Array(dim).fill(''),meeting:new Array(dim).fill(''),training:new Array(dim).fill('')};
+    applyFixedLocked();
+    return false;
+  }
+}
+
+// ═══════════════════════════════════════════════════
 //  NAV
 // ═══════════════════════════════════════════════════
 function showPage(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('.htabs button').forEach((b,i)=>b.classList.toggle('active',['schedule','staff'][i]===p));
+  document.querySelectorAll('.htabs button').forEach((b,i)=>b.classList.toggle('active',['result','schedule','staff'][i]===p));
+  if(p==='result') loadResultPage();
+  if(p==='schedule') initSchedulePage();
 }
 function notify(msg,type=''){
   const el=document.createElement('div');el.className='ni'+(type?' '+type:'');el.textContent=msg;
