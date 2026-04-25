@@ -9,33 +9,35 @@
   --A:#2E7D32;--A-bg:#E8F5E9;--A-bd:#A5D6A7;
   --M:#E65100;--M-bg:#FFF3E0;--M-bd:#FFCC80;
   --P:#1565C0;--P-bg:#E3F2FD;--P-bd:#90CAF9;
-  --accent:#1a1a2e;
+  --accent:#000000;
+  --gold:#C9A96E;--gold-d:#8B6914;
+  --cream:#F7F4EF;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;background:#EDEEF0;min-height:100vh}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#F2F2F2;min-height:100vh}
 
 /* ── Header ── */
-header{background:var(--accent);color:#fff;padding:13px 16px;display:flex;
+header{background:#000;color:#fff;padding:0 16px;height:54px;display:flex;
   align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;
-  box-shadow:0 2px 10px rgba(0,0,0,.35)}
-.hd-title{font-size:17px;font-weight:700;letter-spacing:.3px}
-.hd-sub{font-size:11px;opacity:.55;margin-top:1px}
-#loadSt{font-size:11px;opacity:.65}
+  box-shadow:0 2px 12px rgba(0,0,0,.5)}
+.hd-brand{font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase}
+.hd-brand span{color:var(--gold)}
+#loadSt{font-size:11px;color:rgba(255,255,255,.55)}
 
 /* ── Controls ── */
 .ctrl{background:#fff;border-bottom:1px solid #E4E4E4;padding:10px 14px;
   display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 #selfSel{border:1.5px solid #DDD;padding:7px 10px;border-radius:9px;
-  font-size:14px;font-weight:600;color:var(--accent);flex:1;min-width:130px;
+  font-size:14px;font-weight:600;color:#333;flex:1;min-width:130px;
   appearance:none;background:#F8F8F8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") right 10px center no-repeat}
 .mnav{display:flex;align-items:center;gap:4px;margin-left:auto}
 .mbtn{width:34px;height:34px;border:1.5px solid #DDD;border-radius:8px;
-  cursor:pointer;font-size:18px;font-weight:700;color:var(--accent);
+  cursor:pointer;font-size:18px;font-weight:700;color:#333;
   background:#fff;display:flex;align-items:center;justify-content:center}
 .mbtn:active{background:#F0F0F0}
-.month-lbl{font-size:14px;font-weight:700;min-width:82px;text-align:center;color:var(--accent)}
+.month-lbl{font-size:14px;font-weight:700;min-width:82px;text-align:center;color:#333}
 
-/* ── Stats bar (personal) ── */
+/* ── Stats bar ── */
 .stats-bar{display:none;background:#fff;border-bottom:1px solid #E4E4E4}
 .stats-bar.show{display:flex}
 .si{flex:1;text-align:center;padding:10px 4px;border-right:1px solid #F0F0F0}
@@ -58,20 +60,17 @@ header{background:var(--accent);color:#fff;padding:13px 16px;display:flex;
   flex-direction:column;align-items:center;justify-content:center;
   position:relative;transition:transform .1s,opacity .1s;user-select:none}
 .day-n{position:absolute;top:4px;left:6px;font-size:9px;font-weight:700;opacity:.7}
-
-/* Work */
 .day.A,.day.M,.day.P{cursor:pointer;border-width:2px;border-style:solid}
 .day.A{background:var(--A-bg);border-color:var(--A-bd);color:var(--A)}
 .day.M{background:var(--M-bg);border-color:var(--M-bd);color:var(--M)}
 .day.P{background:var(--P-bg);border-color:var(--P-bd);color:var(--P)}
 .day.A:active,.day.M:active,.day.P:active{transform:scale(.94);opacity:.8}
-.day-code{font-size:clamp(18px,5vw,26px);font-weight:900;line-height:1}
-.day-name{font-size:clamp(8px,2vw,11px);font-weight:600;margin-top:2px;letter-spacing:.2px}
+.day-lbl{font-size:clamp(11px,3.2vw,15px);font-weight:800;line-height:1.2;text-align:center;padding:0 2px}
 
-/* Rest – very muted */
+/* Rest */
 .day.off{background:#EBEBEB;border:1.5px solid #DCDCDC;cursor:default}
 .day.off .day-n{color:#AAAAAA;opacity:1}
-.day.off .day-code{font-size:clamp(11px,3vw,15px);font-weight:400;color:#C0C0C0}
+.day.off .day-lbl{font-size:clamp(10px,2.8vw,13px);font-weight:400;color:#C0C0C0}
 
 /* Empty leading cells */
 .day.ph{background:none;border:none;pointer-events:none}
@@ -93,14 +92,13 @@ header{background:var(--accent);color:#fff;padding:13px 16px;display:flex;
   animation:slideUp .22s ease}
 @keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:none;opacity:1}}
 .dc-handle{width:40px;height:4px;border-radius:2px;background:#DDD;margin:14px auto 18px}
-.dc-date{font-size:13px;color:#888;margin-bottom:8px}
-.dc-top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.dc-badge{padding:8px 20px;border-radius:50px;font-size:24px;font-weight:900}
+.dc-date{font-size:13px;color:#888;margin-bottom:12px;letter-spacing:.2px}
+.dc-top{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.dc-badge{padding:10px 22px;border-radius:50px;font-size:18px;font-weight:900;letter-spacing:.5px}
 .dc-badge.A{background:var(--A-bg);color:var(--A)}
 .dc-badge.M{background:var(--M-bg);color:var(--M)}
 .dc-badge.P{background:var(--P-bg);color:var(--P)}
-.dc-info b{font-size:15px;color:#333;display:block}
-.dc-info span{font-size:13px;color:#888}
+.dc-info b{font-size:13px;color:#555;display:block;font-weight:500}
 .dc-sec{font-size:11px;font-weight:700;color:#AAA;letter-spacing:.6px;
   text-transform:uppercase;margin-bottom:9px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -117,31 +115,30 @@ header{background:var(--accent);color:#fff;padding:13px 16px;display:flex;
 .nosel h2{font-size:16px;color:#555;margin-bottom:6px}
 .nosel p{font-size:13px;color:#AAA}
 
-/* ── Full table fallback ── */
+/* ── Full table ── */
 .tbl-hint{font-size:11px;color:#AAA;padding:8px 14px;text-align:right}
 .tbl-wrap{overflow-x:auto;padding:0 0 16px}
 table.ft{border-collapse:collapse;background:#fff;border-radius:10px;
-  box-shadow:0 1px 6px rgba(0,0,0,.08);min-width:700px;width:100%;font-size:11px;margin:0 8px;width:calc(100% - 16px)}
-table.ft th{background:var(--accent);color:#fff;padding:6px 1px;text-align:center;
+  box-shadow:0 1px 6px rgba(0,0,0,.08);min-width:700px;width:calc(100% - 16px);font-size:11px;margin:0 8px}
+table.ft th{background:#000;color:#fff;padding:6px 1px;text-align:center;
   position:sticky;top:0;z-index:2;white-space:nowrap;font-size:10px}
 table.ft th.hn{min-width:60px;position:sticky;left:0;z-index:3}
 table.ft td{border:1px solid #EBEBEB;padding:0;text-align:center}
 table.ft td.hn{font-weight:600;padding:0 6px;background:#FAFAFA;position:sticky;
   left:0;z-index:1;min-width:60px;border-right:2px solid #DDD;white-space:nowrap}
-.fc{height:26px;width:26px;min-width:26px;display:flex;align-items:center;
-  justify-content:center;font-weight:700;font-size:10px;margin:auto}
+.fc{height:26px;min-width:32px;padding:0 2px;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:9px;margin:auto;border-radius:3px;white-space:nowrap}
 .fc.A{background:var(--A-bg);color:var(--A)}.fc.M{background:var(--M-bg);color:var(--M)}
 .fc.P{background:var(--P-bg);color:var(--P)}.fc.RL,.fc.AL,.fc.SL,.fc.OL{background:#F5F5F5;color:#BBBBBB}
 .fc.empty{color:#E0E0E0}
 td.wkbg{background:#FFFDE7}
-th.wknd{background:#2a2a50}th.fri{background:#1e3a5e}
+th.wknd{background:#333}th.fri{background:#222}
 tr.str td{background:#F9F9F9;font-size:9px;height:15px}
 tr.str td.warn{color:#C62828;font-weight:700}
 
 /* ── RWD ── */
 @media(max-width:360px){
   .day{min-height:46px}
-  .day-name{display:none}
   .ctrl{padding:8px 10px}
 }
 @media(min-width:540px){
@@ -161,10 +158,7 @@ tr.str td.warn{color:#C62828;font-weight:700}
 <body>
 
 <header>
-  <div>
-    <div class="hd-sub">Gloria Store</div>
-    <div class="hd-title">📅 班表</div>
-  </div>
+  <div class="hd-brand">GLORIA <span>MK</span></div>
   <div id="loadSt"></div>
 </header>
 
@@ -196,8 +190,7 @@ tr.str td.warn{color:#C62828;font-weight:700}
     <div class="dc-top">
       <div class="dc-badge" id="dc-badge"></div>
       <div class="dc-info">
-        <b id="dc-sname"></b>
-        <span id="dc-time"></span>
+        <b id="dc-co-label"></b>
       </div>
     </div>
     <div class="dc-sec">配班同事</div>
@@ -209,7 +202,6 @@ tr.str td.warn{color:#C62828;font-weight:700}
 const DOW_ZH={Mon:'一',Tue:'二',Wed:'三',Thu:'四',Fri:'五',Sat:'六',Sun:'日'};
 const DOW_ORD=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const OFF=new Set(['RL','RL/','RL-','AL','SL','ML','BL','OL','PL','FL','WL','生理假']);
-const STIME={A:'10:00–19:00',M:'12:00–21:00',P:'12:30–21:30'};
 const SNAME={A:'早班',M:'中班',P:'晚班'};
 function isOff(x){return !x||OFF.has(x)||x.startsWith('RL')}
 function getDT(dow){return dow==='Sat'||dow==='Sun'?'weekend':dow==='Fri'?'friday':'weekday'}
@@ -297,13 +289,12 @@ function renderCalendar(sid){
       html+=`<div class="day ${s}${wknd?' wk':''}" onclick="showDetail(${i})">
         <div class="day-n">${d.days[i]}</div>
         ${hasSwap?'<div class="swap-dot"></div>':''}
-        <div class="day-code">${s}</div>
-        <div class="day-name">${SNAME[s]||s}</div>
+        <div class="day-lbl">${SNAME[s]||s}</div>
       </div>`;
     } else {
       html+=`<div class="day off${wknd?' wk':''}">
         <div class="day-n">${d.days[i]}</div>
-        <div class="day-code">休</div>
+        <div class="day-lbl">休</div>
       </div>`;
     }
   }
@@ -317,14 +308,15 @@ function showDetail(idx){
   const s=(d.schedules[sid]||[])[idx]||'';
   const dow=d.daysOfWeek[idx];
   document.getElementById('dc-date').textContent=`${d.month} · ${d.days[idx]}日（週${DOW_ZH[dow]}）`;
-  const b=document.getElementById('dc-badge');b.textContent=s;b.className='dc-badge '+s;
-  document.getElementById('dc-sname').textContent=SNAME[s]||s;
-  document.getElementById('dc-time').textContent=STIME[s]||'';
+  const b=document.getElementById('dc-badge');
+  b.textContent=SNAME[s]||s;
+  b.className='dc-badge '+s;
   const co=(d.staff||[]).filter(n=>n!==sid)
     .map(n=>({name:n,sh:(d.schedules[n]||[])[idx]||''}))
     .filter(x=>!isOff(x.sh)&&x.sh);
+  document.getElementById('dc-co-label').textContent=co.length?`共 ${co.length} 位同事上班`:'';
   document.getElementById('dc-co').innerHTML=co.length
-    ?co.map(x=>`<div class="chip ${x.sh}">${x.name} <b>${x.sh}</b></div>`).join('')
+    ?co.map(x=>`<div class="chip ${x.sh}">${x.name} <b>${SNAME[x.sh]||x.sh}</b></div>`).join('')
     :'<div class="chip-empty">這天只有你一人上班</div>';
   document.getElementById('detail').classList.add('show');
 }
@@ -340,7 +332,7 @@ function renderFull(){
     const dw=d.daysOfWeek[i],dt=getDT(dw);
     h+=`<th class="${dt==='weekend'?'wknd':dt==='friday'?'fri':''}">${d.days[i]}<br><span style="font-size:8px;opacity:.7">${DOW_ZH[dw]}</span></th>`;
   }
-  h+='<th>A</th><th>M</th><th>P</th><th>休</th></tr></thead><tbody>';
+  h+='<th>早</th><th>中</th><th>晚</th><th>休</th></tr></thead><tbody>';
   for(const nm of d.staff){
     const sc=d.schedules[nm]||[];
     h+=`<tr><td class="hn">${nm}</td>`;
@@ -349,7 +341,8 @@ function renderFull(){
       const s=sc[i]||'',dt=getDT(d.daysOfWeek[i]);
       if(s==='A')A++;else if(s==='M')M++;else if(s==='P')P++;
       if(isOff(s)&&s)R++;
-      h+=`<td class="${dt==='weekend'?'wkbg':''}"><div class="fc ${s||'empty'}">${s||'—'}</div></td>`;
+      const lbl=SNAME[s]||s||'—';
+      h+=`<td class="${dt==='weekend'?'wkbg':''}"><div class="fc ${s||'empty'}">${lbl}</div></td>`;
     }
     h+=`<td style="font-size:10px;color:var(--A);font-weight:700">${A}</td><td style="font-size:10px;color:var(--M);font-weight:700">${M}</td><td style="font-size:10px;color:var(--P);font-weight:700">${P}</td><td style="font-size:10px;color:#AAA;font-weight:700">${R}</td></tr>`;
   }
