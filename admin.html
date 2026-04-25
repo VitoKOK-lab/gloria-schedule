@@ -97,20 +97,21 @@ td.past-day .cell.empty{color:#E0E0E0 !important}
 /* Print header (hidden on screen) */
 .print-header{display:none;padding:0 0 8px 0;border-bottom:2px solid #CCC;margin-bottom:10px}
 @media print{
-  @page{size:A3 landscape;margin:8mm}
+  @page{size:A4 landscape;margin:8mm}
   header,.wiz-bar,.editor-toolbar,.sidebar,#evtPop,#picker,#lockBanner,.result-sidebar,.result-toolbar,.wiz-steps-ind,.htabs,.hright{display:none !important}
   .cell.vio{outline:none !important}.cell.vio::before{display:none !important}
   .cell.swap-req{outline:none !important}.cell.swap-req::before{display:none !important}
   .cell.fixed-off::after{display:none !important}
-  #page-result,#page-schedule{display:block !important}
+  #page-result{display:none !important}
+  #page-schedule{display:block !important}
+  #wiz-s1{display:none !important}
   #wiz-s3{display:block !important;height:auto !important}
-  .result-main{display:block !important}
-  .result-grid-scroll,.grid-scroll{overflow:visible !important;padding:4px !important}
-  table.sg{font-size:7px !important}
+  .grid-scroll{overflow:visible !important;padding:4px !important}
+  table.sg{font-size:7.5px !important;width:100% !important}
   table.sg th,table.sg td{padding:1px !important}
-  .cell{height:18px !important;width:18px !important;min-width:18px !important;font-size:7px !important}
+  .cell{height:20px !important;min-width:22px !important;font-size:7.5px !important}
   .dh-d{font-size:8px !important}.dh-w{font-size:6px !important}
-  table.sg td.sn{min-width:48px !important;font-size:9px !important}
+  table.sg td.sn{min-width:52px !important;font-size:9px !important}
   .print-header{display:block !important}
 }
 /* History sidebar */
@@ -273,8 +274,7 @@ tr.evt-training .sn-evt{color:#2E7D32}
   </div>
   <div class="hright">
     <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
-    <a href="index.html" class="btn bg" target="_blank">👁 員工視圖</a>
-    <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">🚀 發佈班表</button>
+    <a href="index.html" class="btn bg" target="_blank">👁 查看模式</a>
   </div>
 </header>
 <!-- ══ RESULT PAGE ══ -->
@@ -313,8 +313,7 @@ tr.evt-training .sn-evt{color:#2E7D32}
       <span class="ws ws3">② 排班</span>
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
-      <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">🚀 發佈班表</button>
+      <button class="btn bg" id="undoBtn2" onclick="undo()" disabled>↩ 還原 <span id="histBadge2" style="opacity:.7;font-size:11px">0/10</span></button>
     </div>
   </div>
 
@@ -356,7 +355,14 @@ tr.evt-training .sn-evt{color:#2E7D32}
       <button class="btn bd" id="printBtn" onclick="printSchedule()" style="margin-left:auto">🖨️ 匯出簽核</button>
     </div>
     <div style="display:flex;flex:1;overflow:hidden">
-      <div class="grid-scroll"><table class="sg" id="sg"></table></div>
+      <div class="grid-scroll">
+        <div class="print-header">
+          <div style="font-size:18px;font-weight:700;letter-spacing:1px">GLORIA MK 班表</div>
+          <div style="font-size:14px;margin-top:4px;font-weight:600"><span id="printMonthLabel"></span></div>
+          <div style="font-size:11px;color:#888;margin-top:2px">列印日期：<span id="printDateLabel"></span></div>
+        </div>
+        <table class="sg" id="sg"></table>
+      </div>
       <div class="sidebar">
         <div class="sb-sec">
           <div class="sb-head" onclick="toggleSb('vio')">⚠ 違規事項 <span id="vioCount" style="font-size:11px;color:#888"></span></div>
@@ -693,8 +699,9 @@ function undo(){
   notify('已還原');
 }
 function updateHistBadge(){
-  document.getElementById('histBadge').textContent=`${ST.history.length}/10`;
-  document.getElementById('undoBtn').disabled=!ST.history.length;
+  const n=ST.history.length;
+  ['histBadge','histBadge2'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=`${n}/10`;});
+  ['undoBtn','undoBtn2'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!n;});
 }
 
 // ═══════════════════════════════════════════════════
