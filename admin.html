@@ -133,8 +133,11 @@ td.past-day .cell.empty{color:#E0E0E0 !important}
 .cell.swap-req{outline:2px dashed var(--swap);outline-offset:-2px;border-radius:2px}
 .cell.swap-req::before{content:'申';position:absolute;top:0;left:1px;font-size:7px;background:var(--swap);color:#fff;border-radius:2px;padding:0 2px;font-weight:700}
 .cell.drag-over{outline:2px dashed #1976D2;outline-offset:-2px}
-tr.stat td{height:18px;font-size:10px;background:#F9F9F9}
-tr.stat td.warn{color:#D32F2F;font-weight:700}
+tr.stat td{height:18px;font-size:10px;background:#F9F9F9;text-align:center}
+tr.stat td.warn{background:#FFEBEE;color:#C62828;font-weight:700}
+tr.stat td.exact{background:#E8F5E9;color:#2E7D32;font-weight:700}
+tr.stat td.surplus{background:#FFF8E1;color:#F57F17;font-weight:700}
+.need-n{font-size:8px;opacity:.55;font-weight:400}
 
 /* ── Event rows ── */
 tr.evt td{height:22px;border-bottom:1px solid #F0F0F0}
@@ -850,7 +853,8 @@ function renderGrid(){
       const dt=getDT(ST.daysOfWeek[i]); const isHol=ST.holidays.includes(i);
       const cnt=ST.monthStaff.filter(s=>(ST.draft[s.id]||[])[i]===type).length;
       const need=(req[dt]||{})[type]||0;
-      h+=`<td class="${need>0&&cnt<need?'warn':''}">${cnt}</td>`;
+      const cls=need===0?'':(cnt<need?'warn':cnt===need?'exact':'surplus');
+      h+=`<td class="${cls}">${cnt}${need>0?`<span class="need-n">/${need}</span>`:''}</td>`;
     }
     h+='<td colspan="4"></td></tr>';
   }
