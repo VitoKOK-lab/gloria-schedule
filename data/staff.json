@@ -1,6 +1,6 @@
 {
   "staff": [
-    { "id": "Wiggie", "name": "Wiggie", "type": "FT", "role": "ASM", "fixedDayOff": "Tue" },
+    { "id": "Wiggie", "name": "Wiggie", "type": "FT", "role": "ASM", "fixedDayOff": null },
     { "id": "LIV",    "name": "LIV",    "type": "FT", "role": "SUP", "fixedDayOff": null },
     { "id": "Demi",   "name": "Demi",   "type": "FT", "role": "SSA", "fixedDayOff": null },
     { "id": "Kai",    "name": "Kai",    "type": "FT", "role": "SA",  "fixedDayOff": null },
