@@ -821,12 +821,12 @@ function computeViolations(){
       else{ if(streak>4){ viols.push({type:'error',code:'consec',msg:`${s.name} 連續上班 ${streak} 天（${ST.days[start]}-${ST.days[start+streak-1]}日）`,cells:Array.from({length:streak},(_,k)=>({s:s.id,d:start+k})),meta:{sid:s.id,start,streak}}); } streak=0; }
     }
   }
-  // 2. Holiday off count (假日最多1人休)
-  for(let i=0;i<ST.days.length;i++){
-    const dow=ST.daysOfWeek[i];
-    if(dow!=='Sat'&&dow!=='Sun') continue;
-    const offPpl=ST.monthStaff.filter(s=>isOff((ST.draft[s.id]||[])[i])&&(ST.draft[s.id]||[])[i]);
-    if(offPpl.length>1) viols.push({type:'error',code:'holoff',msg:`${ST.days[i]}日（週${DOW[dow]}）${offPpl.length}人同休（假日限1人）`,cells:offPpl.map(s=>({s:s.id,d:i})),meta:{day:i,ppl:offPpl}});
+  // 2. Per-person monthly weekend off count (每人假日休假 2–3 天)
+  const wkendIdx=[];
+  for(let i=0;i<ST.days.length;i++){const dow=ST.daysOfWeek[i];if(dow==='Sat'||dow==='Sun')wkendIdx.push(i);}
+  for(const s of ST.monthStaff){
+    const wkOff=wkendIdx.filter(i=>isOff((ST.draft[s.id]||[])[i])&&(ST.draft[s.id]||[])[i]).length;
+    if(wkOff>3) viols.push({type:'error',code:'wkoff',msg:`${s.name} 假日休假 ${wkOff} 天（上限3天）`,cells:wkendIdx.filter(i=>isOff((ST.draft[s.id]||[])[i])&&(ST.draft[s.id]||[])[i]).map(i=>({s:s.id,d:i})),meta:{sid:s.id,wkOff}});
   }
   // 3. Trio co-rest
   const trio=(rules.noSimultaneousOff||[]).map(n=>ST.monthStaff.find(s=>s.id===n||s.name===n)).filter(Boolean);
@@ -899,21 +899,25 @@ function genSug(v){
       return {text:`建議給 <b>${s.name}</b> 在 <b>${ST.days[mid]}日</b> 安排休假（RL），拆開連續工作段。`,
         apply:()=>setShift(sid,mid,'RL',true)};
     }
-    case 'holoff':{
-      const {day,ppl}=v.meta;
-      const tgt=ppl.filter(s=>!ST.locked[s.id]?.has(day)).pop();
-      if(!tgt) return {text:'所有假日休假已鎖定，請手動調整。',apply:null};
-      for(let delta=1;delta<8;delta++){
-        for(const alt of [day+delta,day-delta]){
+    case 'wkoff':{
+      const {sid,wkOff}=v.meta; const s=ST.monthStaff.find(x=>x.id===sid);
+      const excess=wkOff-3;
+      const wkOffDays=Array.from({length:ST.days.length},(_,i)=>i)
+        .filter(i=>{const dow=ST.daysOfWeek[i];return(dow==='Sat'||dow==='Sun')&&isOff((ST.draft[sid]||[])[i])&&(ST.draft[sid]||[])[i];});
+      const unlocked=wkOffDays.filter(d=>!ST.locked[sid]?.has(d));
+      if(!unlocked.length) return {text:`${s.name} 的假日休假均已鎖定，請手動調整。`,apply:null};
+      const tgt=unlocked[unlocked.length-1];
+      for(let delta=1;delta<14;delta++){
+        for(const alt of [tgt+delta,tgt-delta]){
           if(alt<0||alt>=ST.days.length) continue;
           const dow=ST.daysOfWeek[alt];
           if(dow==='Sat'||dow==='Sun') continue;
-          if(isWork((ST.draft[tgt.id]||[])[alt])&&!ST.locked[tgt.id]?.has(alt))
-            return {text:`建議將 <b>${tgt.name}</b> 的 ${ST.days[day]}日 假日休假移到 ${ST.days[alt]}日（週${DOW[dow]}），假日改為 P 晚班。`,
-              apply:()=>{setShift(tgt.id,day,'P',true);setShift(tgt.id,alt,'RL',true);}};
+          if(isWork((ST.draft[sid]||[])[alt])&&!ST.locked[sid]?.has(alt))
+            return {text:`建議將 <b>${s.name}</b> 的 ${ST.days[tgt]}日 假日休假移到 ${ST.days[alt]}日（週${DOW[dow]}）。`,
+              apply:()=>{setShift(sid,tgt,'P',true);setShift(sid,alt,'RL',true);}};
         }
       }
-      return {text:`建議將 <b>${tgt.name}</b> 的 ${ST.days[day]}日 假日休假改為 P 晚班。`,apply:()=>setShift(tgt.id,day,'P',true)};
+      return {text:`建議將 <b>${s.name}</b> 的 ${ST.days[tgt]}日 假日休假改為上班（晚班）。`,apply:()=>setShift(sid,tgt,'P',true)};
     }
     case 'trio':{
       const {day,trio}=v.meta; const tgt=trio[trio.length-1];
@@ -1094,19 +1098,22 @@ function autoSchedule(){
   const TARGET=ST.rules.daysOffPerMonth?.min||10;
   const MAXC=ST.rules.maxConsecutiveWorkDays||4;
   const PREFC=3; // preferred consecutive work days
-  // Max off per day: weekend=1(規則), weekday=staff-minRequired
   const minNeeded={weekday:4,friday:5,weekend:5};
   const dailyOffCap=ST.daysOfWeek.map(dow=>{
-    if(dow==='Sat'||dow==='Sun') return 1; // 假日最多一人休
+    if(dow==='Sat'||dow==='Sun') return Math.max(1,Math.floor(ft.length/2));
     return Math.max(1, ft.length-(minNeeded[getDT(dow)]||4));
   });
   // Track off count per day (start from locked cells)
   const dailyOff=new Array(n).fill(0);
   for(const s of ft) for(let d=0;d<n;d++) if(sched[s.id][d]&&isOff(sched[s.id][d])) dailyOff[d]++;
+  // Per-person weekend off cap (max 3)
+  const MAX_WK_OFF=3;
+  const wkDays=Array.from({length:n},(_,i)=>i).filter(i=>ST.daysOfWeek[i]==='Sat'||ST.daysOfWeek[i]==='Sun');
   // Phase 1: off days
   for(const s of shuffled){
     const alreadyOff=sched[s.id].filter(x=>x&&isOff(x)).length;
-    placeOffDays(s.id,Math.max(0,TARGET-alreadyOff),sched,noCoOff,MAXC,PREFC,n,dailyOff,dailyOffCap);
+    const alreadyWkOff=wkDays.filter(d=>sched[s.id][d]&&isOff(sched[s.id][d])).length;
+    placeOffDays(s.id,Math.max(0,TARGET-alreadyOff),sched,noCoOff,MAXC,PREFC,n,dailyOff,dailyOffCap,wkDays,MAX_WK_OFF-alreadyWkOff);
     for(let d=0;d<n;d++) if(sched[s.id][d]===null) sched[s.id][d]='__W';
   }
   // Phase 2: shift types
@@ -1138,11 +1145,14 @@ function autoSchedule(){
   renderGrid(); renderViolations(); renderStats();
   notify('自動排班完成，可手動調整');
 }
-function placeOffDays(sid,need,sched,noCoOff,maxC,prefC,n,dailyOff,dailyOffCap){
+function placeOffDays(sid,need,sched,noCoOff,maxC,prefC,n,dailyOff,dailyOffCap,wkDays,wkRemain){
   const sc=sched[sid];
   const inTrio=noCoOff.includes(sid);
+  const wkSet=new Set(wkDays||[]);
+  let wkLeft=wkRemain??99;
   function canPlace(d,relaxTrio,relaxCap){
     if(sc[d]!==null) return false;
+    if(wkSet.has(d)&&wkLeft<=0) return false; // personal weekend cap
     if(!relaxCap&&dailyOff[d]>=dailyOffCap[d]) return false;
     if(!relaxTrio&&inTrio){
       const co=noCoOff.filter(x=>x!==sid&&sched[x]&&sched[x][d]==='RL').length;
@@ -1150,7 +1160,7 @@ function placeOffDays(sid,need,sched,noCoOff,maxC,prefC,n,dailyOff,dailyOffCap){
     }
     return true;
   }
-  function placeAt(d){ sc[d]='RL'; dailyOff[d]++; }
+  function placeAt(d){ sc[d]='RL'; dailyOff[d]++; if(wkSet.has(d))wkLeft--; }
   function longestRun(){
     let best={len:0,mid:0},runStart=0,runLen=0;
     for(let i=0;i<=n;i++){
