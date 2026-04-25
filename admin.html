@@ -83,11 +83,13 @@ table.sg th.sn{position:sticky;left:0;z-index:3;min-width:78px}
 table.sg td{border:1px solid #EBEBEB;padding:0;text-align:center}
 table.sg td.sn{position:sticky;left:0;z-index:1;background:#FAFAFA;font-weight:600;font-size:13px;padding:0 8px;border-right:2px solid #DDD;white-space:nowrap;min-width:78px}
 .dh-d{font-size:12px;font-weight:700}.dh-w{font-size:9px;opacity:.65}
-th.wknd{background:#FFCDD2;color:#B71C1C}th.fri{background:var(--gold-d)}
+th.wknd{background:#FFCDD2}th.fri{background:var(--gold-d)}
 th.wknd,th.fri{border-bottom:2px solid #EF9A9A}
+th.wknd .dh-d,th.wknd .dh-w{color:#C62828}
 td.wbg{background:transparent}
-th.hol{background:#FFCDD2 !important;color:#B71C1C !important;cursor:pointer;border-bottom:2px solid #EF9A9A !important}
+th.hol{background:#FFCDD2 !important;cursor:pointer;border-bottom:2px solid #EF9A9A !important}
 th.hol:hover{background:#EF9A9A !important}
+th.hol .dh-d,th.hol .dh-w{color:#C62828}
 td.hol-bg{background:transparent !important}
 /* Past date styling */
 td.past-day .cell{color:#CACACA !important;cursor:default !important;pointer-events:none}
@@ -96,7 +98,7 @@ td.past-day .cell.empty{color:#E0E0E0 !important}
 .print-header{display:none;padding:0 0 8px 0;border-bottom:2px solid #CCC;margin-bottom:10px}
 @media print{
   @page{size:A3 landscape;margin:8mm}
-  header,#lockBanner,#histBanner,.mbar,.editor-toolbar,.sidebar,#evtPop,#picker{display:none !important}
+  header,#lockBanner,#histBanner,.mbar,.editor-toolbar,.sidebar,#evtPop,#picker,tr.stat,tr.evt{display:none !important}
   #page-schedule{display:block !important}
   #editor{display:block !important;height:auto !important}
   .editor-wrap{height:auto !important;overflow:visible !important;display:block !important}
