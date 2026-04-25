@@ -69,7 +69,7 @@
   "holidays": [
     0
   ],
-  "manualLock": false,
+  "manualLock": true,
   "events": {
     "audit": [
       "",
