@@ -794,18 +794,15 @@ function autoSchedule(){
   const n=ST.days.length;
   const req=ST.rules.staffingRequirements||{weekday:{A:1,M:0,P:3},friday:{A:1,M:1,P:3},weekend:{A:1,M:1,P:3}};
   const noCoOff=(ST.rules.noSimultaneousOff||[]).map(nm=>ST.monthStaff.find(s=>s.id===nm||s.name===nm)).filter(Boolean).map(s=>s.id);
-  // Build working copy from locked cells only
   const sched={};
   for(const s of ft){ sched[s.id]=Array.from({length:n},(_,i)=>ST.locked[s.id]?.has(i)?(ST.draft[s.id]||[])[i]||null:null); }
   const shuffled=sfl([...ft]);
-  // Phase 1: off days
   const TARGET=ST.rules.daysOffPerMonth?.min||10;
+  const MAXC=ST.rules.maxConsecutiveWorkDays||4;
+  // Phase 1: off days
   for(const s of shuffled){
-    const sc=sched[s.id];
-    const alreadyOff=sc.filter(x=>x&&isOff(x)).length;
-    const need=Math.max(0,TARGET-alreadyOff);
-    const avail=sfl(sc.map((_,i)=>sc[i]===null?i:-1).filter(x=>x>=0));
-    pickOff(s.id,avail,need,sched,noCoOff);
+    const alreadyOff=sched[s.id].filter(x=>x&&isOff(x)).length;
+    placeOffDays(s.id,Math.max(0,TARGET-alreadyOff),sched,noCoOff,MAXC,n);
     for(let d=0;d<n;d++) if(sched[s.id][d]===null) sched[s.id][d]='__W';
   }
   // Phase 2: shift types
@@ -815,14 +812,13 @@ function autoSchedule(){
     const lkA=ft.filter(s=>sched[s.id][d]==='A').length;
     const lkM=ft.filter(s=>sched[s.id][d]==='M').length;
     const nA=Math.max(0,(r.A||0)-lkA), nM=Math.max(0,(r.M||0)-lkM);
-    // sort by ascending A count for balance
     working.sort((a,b)=>{const ca=sched[a.id].filter(x=>x==='A').length,cb=sched[b.id].filter(x=>x==='A').length;return ca-cb+(Math.random()-.5)*.4;});
     let idx=0;
     for(let i=0;i<nA&&idx<working.length;i++,idx++) sched[working[idx].id][d]='A';
     for(let i=0;i<nM&&idx<working.length;i++,idx++) sched[working[idx].id][d]='M';
     for(;idx<working.length;idx++) sched[working[idx].id][d]='P';
   }
-  // Commit (unlocked cells only)
+  // Commit
   for(const s of ft){
     if(!ST.draft[s.id]) ST.draft[s.id]=new Array(n).fill(null);
     for(let d=0;d<n;d++){
@@ -835,21 +831,48 @@ function autoSchedule(){
   renderGrid(); renderViolations(); renderStats();
   notify('自動排班完成，可手動調整');
 }
-function pickOff(sid,avail,need,sched,noCoOff){
-  const temp=[...sched[sid]]; let picked=0;
-  for(const d of avail){
-    if(picked>=need) break;
-    if(noCoOff.includes(sid)){
-      const co=noCoOff.filter(x=>x!==sid&&sched[x]&&isOff(sched[x][d])).length;
-      if(co>=2) continue;
+function placeOffDays(sid,need,sched,noCoOff,maxC,n){
+  const sc=sched[sid];
+  const inTrio=noCoOff.includes(sid);
+  // Only count confirmed 'RL' for trio check (null = unassigned, not "off")
+  function canPlace(d){
+    if(sc[d]!==null) return false;
+    if(inTrio){
+      const co=noCoOff.filter(x=>x!==sid&&sched[x]&&sched[x][d]==='RL').length;
+      if(co>=2) return false;
     }
-    temp[d]='RL';
-    if(!hasOver4(temp)){ sched[sid][d]='RL'; picked++; } else { temp[d]=null; }
+    return true;
   }
-  // Relax if still need more
-  if(picked<need){ for(const d of avail){ if(picked>=need)break; if(sched[sid][d]===null){sched[sid][d]='RL';picked++;} } }
+  // Find the longest run of consecutive work/unassigned days and return its midpoint
+  function longestRun(){
+    let best={len:0,mid:0},runStart=0,runLen=0;
+    for(let i=0;i<=n;i++){
+      const x=i<n?sc[i]:null;
+      const isW=(x===null||x==='__W'||(x&&!isOff(x)));
+      if(i<n&&isW){ if(!runLen)runStart=i; runLen++; }
+      else{ if(runLen>best.len){best={len:runLen,mid:runStart+Math.floor(runLen/2)};} runLen=0; }
+    }
+    return best;
+  }
+  let picked=0;
+  // First pass: break mandatory long runs (>maxC) by placing off at the midpoint
+  while(picked<need){
+    const {len,mid}=longestRun();
+    if(len<=maxC) break;
+    let placed=false;
+    for(let delta=0;delta<=len&&!placed;delta++){
+      for(const d of [mid-delta,mid+delta]){
+        if(d>=0&&d<n&&canPlace(d)){ sc[d]='RL'; picked++; placed=true; break; }
+      }
+    }
+    if(!placed) break; // trio constraint blocking – give up mandatory pass
+  }
+  // Second pass: fill remaining off days randomly
+  const avail=sfl(Array.from({length:n},(_,i)=>i).filter(d=>sc[d]===null));
+  for(const d of avail){ if(picked>=need)break; if(canPlace(d)){sc[d]='RL';picked++;} }
+  // Relax trio constraint if still short
+  for(const d of avail){ if(picked>=need)break; if(sc[d]===null){sc[d]='RL';picked++;} }
 }
-function hasOver4(sc){ let c=0; for(const x of sc){ if(x===null||x==='__W'||(x&&!isOff(x))){c++;if(c>4)return true;}else c=0; } return false; }
 function sfl(a){ for(let i=a.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
 function clearUnlocked(){
