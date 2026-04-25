@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班表系統 | Gloria</title>
+<style>
+  :root {
+    --A: #4CAF50; --A-light: #E8F5E9;
+    --M: #FF9800; --M-light: #FFF3E0;
+    --P: #2196F3; --P-light: #E3F2FD;
+    --RL: #9E9E9E; --RL-light: #F5F5F5;
+    --AL: #9C27B0; --AL-light: #F3E5F5;
+    --SL: #F44336; --SL-light: #FFEBEE;
+    --OL: #607D8B; --OL-light: #ECEFF1;
+    --OFF: #ECEFF1;
+    --weekend-bg: #FFF8E1;
+    --holiday-bg: #FCE4EC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #F5F7FA; color: #333; }
+
+  header {
+    background: #1a1a2e; color: white; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  header h1 { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
+  header .nav { display: flex; gap: 8px; }
+  header .nav button {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    transition: background 0.2s;
+  }
+  header .nav button:hover, header .nav button.active { background: rgba(255,255,255,0.25); }
+
+  .month-nav {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px; background: white; border-bottom: 1px solid #E0E0E0;
+  }
+  .month-nav button { background: none; border: 1px solid #DDD; padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+  .month-nav .month-label { font-size: 18px; font-weight: 600; min-width: 120px; text-align: center; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 10px 24px; background: white; border-bottom: 1px solid #E0E0E0;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px; font-size: 12px;
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+  }
+
+  .main { padding: 16px 24px; overflow-x: auto; }
+
+  /* Schedule grid */
+  .schedule-wrap { overflow-x: auto; }
+  table.schedule {
+    border-collapse: collapse; width: 100%; min-width: 900px;
+    background: white; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    font-size: 12px;
+  }
+  table.schedule th, table.schedule td {
+    border: 1px solid #E8E8E8; text-align: center; padding: 0;
+  }
+  table.schedule th {
+    background: #1a1a2e; color: white; padding: 8px 4px;
+    font-weight: 500; position: sticky; top: 0; z-index: 2;
+  }
+  table.schedule th.name-col { min-width: 80px; position: sticky; left: 0; z-index: 3; }
+  table.schedule td.name-col {
+    font-weight: 600; background: #FAFAFA; padding: 0 8px;
+    position: sticky; left: 0; z-index: 1; min-width: 80px;
+    border-right: 2px solid #DDD;
+  }
+  table.schedule .day-header { min-width: 36px; }
+  table.schedule .day-header .date { font-size: 13px; font-weight: 600; }
+  table.schedule .day-header .dow { font-size: 10px; opacity: 0.7; }
+  table.schedule .day-header.weekend { background: #2a2a4e; }
+  table.schedule .day-header.friday { background: #1e3a5e; }
+
+  .cell {
+    min-width: 36px; height: 36px; cursor: default;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 12px; transition: opacity 0.15s;
+  }
+  .cell:hover { opacity: 0.8; }
+  .cell.A { background: var(--A-light); color: var(--A); }
+  .cell.M { background: var(--M-light); color: var(--M); }
+  .cell.P { background: var(--P-light); color: var(--P); }
+  .cell.RL, .cell.RL\/ { background: var(--RL-light); color: var(--RL); }
+  .cell.AL { background: var(--AL-light); color: var(--AL); }
+  .cell.SL { background: var(--SL-light); color: var(--SL); }
+  .cell.OL { background: var(--OL-light); color: var(--OL); }
+  .cell.生理假 { background: #FCE4EC; color: #E91E63; }
+  .cell.empty { background: #FAFAFA; color: #CCC; }
+  td.weekend-col { background: #FFFDE7 !important; }
+  td.holiday-col { background: #FCE4EC !important; }
+
+  .cell.violation { outline: 2px solid #F44336; outline-offset: -2px; }
+
+  /* Stats row */
+  tr.stats-row td { font-size: 11px; background: #F9F9F9; color: #555; height: 24px; }
+  tr.stats-A td { color: var(--A); font-weight: 600; }
+  tr.stats-M td { color: var(--M); font-weight: 600; }
+  tr.stats-P td { color: var(--P); font-weight: 600; }
+  tr.stats-row td.warn { color: #F44336; font-weight: 700; }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px; margin-bottom: 16px;
+  }
+  .summary-card {
+    background: white; border-radius: 10px; padding: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .summary-card h3 { font-size: 13px; color: #888; margin-bottom: 6px; }
+  .summary-card .val { font-size: 22px; font-weight: 700; }
+  .summary-card .sub { font-size: 11px; color: #AAA; margin-top: 2px; }
+  .summary-card.ok .val { color: #4CAF50; }
+  .summary-card.warn .val { color: #FF9800; }
+  .summary-card.err .val { color: #F44336; }
+
+  /* Violations panel */
+  .violations { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; }
+  .violations h2 { font-size: 15px; margin-bottom: 12px; color: #333; }
+  .vio-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid #F0F0F0; font-size: 13px;
+  }
+  .vio-item:last-child { border-bottom: none; }
+  .vio-badge {
+    flex-shrink: 0; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  }
+  .vio-badge.error { background: #FFEBEE; color: #F44336; }
+  .vio-badge.warn { background: #FFF3E0; color: #FF9800; }
+
+  /* Person stats table */
+  .person-stats { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .person-stats h2 { font-size: 15px; margin-bottom: 12px; }
+  .person-stats table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .person-stats th { text-align: left; padding: 6px 10px; background: #F5F5F5; font-weight: 600; }
+  .person-stats td { padding: 7px 10px; border-bottom: 1px solid #F5F5F5; }
+  .person-stats .ok { color: #4CAF50; }
+  .person-stats .warn { color: #FF9800; }
+  .person-stats .err { color: #F44336; }
+
+  .section { margin-bottom: 16px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  @media (max-width: 600px) {
+    .main { padding: 10px; }
+    header { padding: 12px; }
+    header h1 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📅 Gloria 排班系統</h1>
+  <div class="nav">
+    <button class="active" onclick="switchView('schedule')">班表</button>
+    <button onclick="switchView('analysis')">分析</button>
+  </div>
+</header>
+
+<div class="month-nav">
+  <button onclick="prevMonth()">&#8249;</button>
+  <span class="month-label" id="monthLabel">—</span>
+  <button onclick="nextMonth()">&#8250;</button>
+  <span style="font-size:12px;color:#888;margin-left:8px;" id="dataStatus"></span>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--A)"></div>早班 A</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--M)"></div>中班 M</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--P)"></div>晚班 P</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--RL)"></div>例假 RL</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--AL)"></div>年假 AL</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--SL)"></div>病假 SL</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--OL)"></div>公假 OL</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FCE4EC"></div>生理假</div>
+  <div class="legend-item" style="margin-left:16px;"><div class="legend-dot" style="background:#FFFDE7;border:1px solid #FFD54F"></div>週末</div>
+  <div class="legend-item"><div class="legend-dot" style="border:2px solid #F44336;border-radius:3px"></div>規則違規</div>
+</div>
+
+<div class="main">
+  <div id="view-schedule" class="view active">
+    <div class="schedule-wrap">
+      <table class="schedule" id="scheduleTable"></table>
+    </div>
+  </div>
+
+  <div id="view-analysis" class="view">
+    <div class="summary-grid" id="summaryCards"></div>
+    <div class="violations section" id="violationsPanel"></div>
+    <div class="person-stats section" id="personStats"></div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['2026-04'];
+let currentMonthIdx = 0;
+let scheduleData = null;
+let staffData = null;
+
+const OFF_CODES = new Set(['RL','RL/','AL','SL','ML','BL','OL','PL','FL','WL','生理假','']);
+function isOff(x) { return OFF_CODES.has(x) || x.startsWith('RL'); }
+function isWorking(x) { return x && !isOff(x); }
+
+async function loadData() {
+  const month = MONTHS[currentMonthIdx];
+  document.getElementById('dataStatus').textContent = '載入中...';
+  try {
+    const [sched, staff] = await Promise.all([
+      fetch(`data/schedule_${month.replace('-','_')}.json`).then(r => r.json()),
+      fetch('data/staff.json').then(r => r.json())
+    ]);
+    scheduleData = sched;
+    staffData = staff;
+    document.getElementById('monthLabel').textContent = month;
+    document.getElementById('dataStatus').textContent = '';
+    renderAll();
+  } catch(e) {
+    document.getElementById('dataStatus').textContent = '⚠ 無資料';
+    console.error(e);
+  }
+}
+
+function renderAll() {
+  renderSchedule();
+  renderAnalysis();
+}
+
+function getDayType(dow) {
+  if (dow === 'Sat' || dow === 'Sun') return 'weekend';
+  if (dow === 'Fri') return 'friday';
+  return 'weekday';
+}
+
+const DOW_ZH = { Mon:'一', Tue:'二', Wed:'三', Thu:'四', Fri:'五', Sat:'六', Sun:'日' };
+
+function renderSchedule() {
+  const d = scheduleData;
+  const table = document.getElementById('scheduleTable');
+  const violations = computeViolations();
+
+  let html = '<thead><tr>';
+  html += '<th class="name-col">姓名</th>';
+  for (let i = 0; i < d.days.length; i++) {
+    const dow = d.daysOfWeek[i];
+    const dtype = getDayType(dow);
+    const cls = dtype === 'weekend' ? 'weekend' : dtype === 'friday' ? 'friday' : '';
+    html += `<th class="day-header ${cls}">
+      <div class="date">${d.days[i]}</div>
+      <div class="dow">${DOW_ZH[dow]||dow}</div>
+    </th>`;
+  }
+  html += '<th>早</th><th>中</th><th>晚</th><th>休</th></tr></thead><tbody>';
+
+  for (const name of d.staff) {
+    const sched = d.schedules[name] || [];
+    const vioSet = violations.perPerson[name] || new Set();
+    html += `<tr><td class="name-col">${name}</td>`;
+    let A=0,M=0,P=0,off=0;
+    for (let i = 0; i < d.days.length; i++) {
+      const shift = sched[i] || '';
+      const dow = d.daysOfWeek[i];
+      const dtype = getDayType(dow);
+      const colCls = dtype === 'weekend' ? 'weekend-col' : '';
+      const vioCls = vioSet.has(i) ? ' violation' : '';
+      const displayShift = shift || '—';
+      const cellCls = shift || 'empty';
+      if (shift === 'A') A++;
+      else if (shift === 'M') M++;
+      else if (shift === 'P') P++;
+      if (isOff(shift) && shift !== '') off++;
+      html += `<td class="${colCls}"><div class="cell ${cellCls}${vioCls}" title="${name} ${d.days[i]}日: ${shift||'未排'}">${displayShift}</div></td>`;
+    }
+    html += `<td style="font-size:11px;color:var(--A);font-weight:600">${A}</td>`;
+    html += `<td style="font-size:11px;color:var(--M);font-weight:600">${M}</td>`;
+    html += `<td style="font-size:11px;color:var(--P);font-weight:600">${P}</td>`;
+    html += `<td style="font-size:11px;color:var(--RL);font-weight:600">${off}</td>`;
+    html += '</tr>';
+  }
+
+  // Staffing count rows
+  const counts = computeDailyCounts();
+  const req = staffData.rules.staffingRequirements;
+
+  for (const type of ['A','M','P']) {
+    html += `<tr class="stats-row stats-${type}"><td class="name-col" style="font-size:11px;padding:0 8px">${type==='A'?'早班人數':type==='M'?'中班人數':'晚班人數'}</td>`;
+    for (let i = 0; i < d.days.length; i++) {
+      const dow = d.daysOfWeek[i];
+      const dtype = getDayType(dow);
+      const colCls = dtype === 'weekend' ? 'weekend-col' : '';
+      const cnt = counts[i][type];
+      const needed = req[dtype][type];
+      const warn = needed > 0 && cnt < needed ? ' warn' : '';
+      html += `<td class="${colCls}${warn}" style="height:20px;font-size:11px">${cnt}</td>`;
+    }
+    html += '<td colspan="4"></td></tr>';
+  }
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function computeDailyCounts() {
+  const d = scheduleData;
+  return d.days.map((_, i) => {
+    const counts = { A:0, M:0, P:0 };
+    for (const name of d.staff) {
+      const shift = (d.schedules[name] || [])[i] || '';
+      if (shift === 'A') counts.A++;
+      else if (shift === 'M') counts.M++;
+      else if (shift === 'P') counts.P++;
+    }
+    return counts;
+  });
+}
+
+function computeViolations() {
+  const d = scheduleData;
+  const rules = staffData.rules;
+  const violations = [];
+  const perPerson = {};
+
+  // Rule: consecutive days
+  for (const name of d.staff) {
+    if (name === 'LIV') continue;
+    const sched = d.schedules[name] || [];
+    perPerson[name] = new Set();
+    let streak = 0;
+    let streakStart = 0;
+    for (let i = 0; i <= sched.length; i++) {
+      const working = i < sched.length && isWorking(sched[i]);
+      if (working) {
+        if (streak === 0) streakStart = i;
+        streak++;
+      } else {
+        if (streak > rules.maxConsecutiveWorkDays) {
+          violations.push({ type: 'error', msg: `${name} 連續上班 ${streak} 天（${d.days[streakStart]}-${d.days[streakStart+streak-1]}日），超過上限 ${rules.maxConsecutiveWorkDays} 天` });
+          for (let j = streakStart; j < streakStart+streak; j++) perPerson[name].add(j);
+        }
+        streak = 0;
+      }
+    }
+  }
+
+  // Rule: co-off
+  const trio = rules.noSimultaneousOff;
+  for (let i = 0; i < d.days.length; i++) {
+    const offNames = trio.filter(n => {
+      const s = (d.schedules[n] || [])[i] || '';
+      return isOff(s);
+    });
+    if (offNames.length >= 3) {
+      violations.push({ type: 'error', msg: `${d.days[i]}日：${offNames.join('+')} 三人同休` });
+      offNames.forEach(n => { if (perPerson[n]) perPerson[n].add(i); });
+    } else if (offNames.length === 2) {
+      violations.push({ type: 'warn', msg: `${d.days[i]}日：${offNames.join('+')} 同休` });
+    }
+  }
+
+  // Rule: early shift balance
+  const aCounts = {};
+  for (const name of d.staff) {
+    if (name === 'LIV') continue;
+    aCounts[name] = (d.schedules[name] || []).filter(s => s === 'A').length;
+  }
+  const vals = Object.values(aCounts);
+  const diff = Math.max(...vals) - Math.min(...vals);
+  if (diff > rules.earlyShiftBalanceTolerance + 1) {
+    const maxP = Object.entries(aCounts).filter(([,v]) => v === Math.max(...vals)).map(([n]) => n);
+    const minP = Object.entries(aCounts).filter(([,v]) => v === Math.min(...vals)).map(([n]) => n);
+    violations.push({ type: 'warn', msg: `早班分配不均：${maxP.join(',')} 最多(${Math.max(...vals)}次) vs ${minP.join(',')} 最少(${Math.min(...vals)}次)，差距 ${diff} 超過規定 ±1` });
+  }
+
+  // Rule: days off
+  for (const name of d.staff) {
+    if (name === 'LIV' || name === '婕芸') continue;
+    const sched = d.schedules[name] || [];
+    const off = sched.filter(s => isOff(s) && s !== '').length;
+    if (off < rules.daysOffPerMonth.min || off > rules.daysOffPerMonth.max) {
+      violations.push({ type: 'warn', msg: `${name} 休假 ${off} 天（應為 ${rules.daysOffPerMonth.min}-${rules.daysOffPerMonth.max} 天）` });
+    }
+  }
+
+  return { list: violations, perPerson };
+}
+
+function renderAnalysis() {
+  const d = scheduleData;
+  const violations = computeViolations();
+  const counts = computeDailyCounts();
+  const req = staffData.rules.staffingRequirements;
+
+  // Summary cards
+  const errors = violations.list.filter(v => v.type === 'error').length;
+  const warns = violations.list.filter(v => v.type === 'warn').length;
+  const staffingIssues = d.days.filter((_, i) => {
+    const dtype = getDayType(d.daysOfWeek[i]);
+    const r = req[dtype];
+    const c = counts[i];
+    return (r.A > 0 && c.A < r.A) || (r.M > 0 && c.M < r.M) || (r.P > 0 && c.P < r.P);
+  }).length;
+
+  const cardsEl = document.getElementById('summaryCards');
+  cardsEl.innerHTML = `
+    <div class="summary-card ${errors > 0 ? 'err' : 'ok'}">
+      <h3>嚴重違規</h3>
+      <div class="val">${errors}</div>
+      <div class="sub">需要立即修正</div>
+    </div>
+    <div class="summary-card ${warns > 0 ? 'warn' : 'ok'}">
+      <h3>注意事項</h3>
+      <div class="val">${warns}</div>
+      <div class="sub">建議調整</div>
+    </div>
+    <div class="summary-card ${staffingIssues > 0 ? 'warn' : 'ok'}">
+      <h3>人力不足天數</h3>
+      <div class="val">${staffingIssues}</div>
+      <div class="sub">（全職員工統計）</div>
+    </div>
+    <div class="summary-card">
+      <h3>全職員工</h3>
+      <div class="val" style="color:#1a1a2e">${d.staff.length}</div>
+      <div class="sub">${d.month}</div>
+    </div>
+  `;
+
+  // Violations panel
+  const vPanel = document.getElementById('violationsPanel');
+  if (violations.list.length === 0) {
+    vPanel.innerHTML = '<h2>⚠ 違規與注意事項</h2><div style="color:#4CAF50;padding:12px 0">✅ 本月無違規</div>';
+  } else {
+    let vhtml = '<h2>⚠ 違規與注意事項</h2>';
+    for (const v of violations.list) {
+      vhtml += `<div class="vio-item">
+        <span class="vio-badge ${v.type}">${v.type === 'error' ? '❌ 違規' : '⚠ 注意'}</span>
+        <span>${v.msg}</span>
+      </div>`;
+    }
+    vPanel.innerHTML = vhtml;
+  }
+
+  // Person stats
+  const rules = staffData.rules;
+  const aCounts = {};
+  for (const name of d.staff) {
+    aCounts[name] = (d.schedules[name] || []).filter(s => s === 'A').length;
+  }
+  const aVals = Object.values(aCounts).filter((_, i) => d.staff[i] !== 'LIV');
+  const aMax = Math.max(...aVals), aMin = Math.min(...aVals);
+
+  let thtml = `<h2>個人統計</h2><table>
+    <thead><tr><th>姓名</th><th>早班 A</th><th>中班 M</th><th>晚班 P</th><th>休假天數</th><th>早班平衡</th><th>休假合規</th></tr></thead><tbody>`;
+
+  for (const name of d.staff) {
+    const sched = d.schedules[name] || [];
+    const A = sched.filter(s => s === 'A').length;
+    const M = sched.filter(s => s === 'M').length;
+    const P = sched.filter(s => s === 'P').length;
+    const off = sched.filter(s => isOff(s) && s !== '').length;
+    const skip = name === 'LIV' || name === '婕芸';
+    const offOk = skip || (off >= rules.daysOffPerMonth.min && off <= rules.daysOffPerMonth.max);
+    const aOk = skip || (A >= aMin && A <= aMin + rules.earlyShiftBalanceTolerance + 1);
+    thtml += `<tr>
+      <td style="font-weight:600">${name}</td>
+      <td style="color:var(--A)">${A}</td>
+      <td style="color:var(--M)">${M}</td>
+      <td style="color:var(--P)">${P}</td>
+      <td class="${offOk ? 'ok' : 'err'}">${off} ${offOk ? '✓' : '✗'}</td>
+      <td class="${aOk ? 'ok' : 'warn'}">${A} ${skip ? '-' : (aOk ? '✓' : '⚠')}</td>
+      <td class="${offOk ? 'ok' : 'err'}">${skip ? '-' : (offOk ? '✓' : '✗')}</td>
+    </tr>`;
+  }
+  thtml += '</tbody></table>';
+  document.getElementById('personStats').innerHTML = thtml;
+}
+
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('header .nav button').forEach((btn, i) => {
+    btn.classList.toggle('active', (i === 0 && v === 'schedule') || (i === 1 && v === 'analysis'));
+  });
+}
+
+function prevMonth() {
+  if (currentMonthIdx > 0) { currentMonthIdx--; loadData(); }
+}
+function nextMonth() {
+  if (currentMonthIdx < MONTHS.length - 1) { currentMonthIdx++; loadData(); }
+}
+
+loadData();
+</script>
+</body>
+</html>
