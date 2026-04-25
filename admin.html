@@ -83,18 +83,36 @@ table.sg th.sn{position:sticky;left:0;z-index:3;min-width:78px}
 table.sg td{border:1px solid #EBEBEB;padding:0;text-align:center}
 table.sg td.sn{position:sticky;left:0;z-index:1;background:#FAFAFA;font-weight:600;font-size:13px;padding:0 8px;border-right:2px solid #DDD;white-space:nowrap;min-width:78px}
 .dh-d{font-size:12px;font-weight:700}.dh-w{font-size:9px;opacity:.65}
-th.wknd{background:#5C4A1E}th.fri{background:var(--gold-d)}
-td.wbg{background:#FFE580}
-td.wbg .cell.empty{color:#A08800}
+th.wknd{background:#F5EDD8;color:#5C4A1E}th.fri{background:var(--gold-d)}
 th.wknd,th.fri{border-bottom:3px solid var(--gold)}
-th.hol{background:#6A1B9A !important;cursor:pointer;border-bottom:3px solid #CE93D8 !important}
-th.hol:hover{background:#7B1FA2 !important}
-td.hol-bg{background:#D4A8EC !important}
-td.hol-bg .cell.empty{color:#6A1B9A}
-/* Saturday left separator */
-th.sat-sep,td.sat-sep{box-shadow:inset 3px 0 0 0 var(--gold)}
+td.wbg{background:transparent}
+th.hol{background:#F0E8F8 !important;cursor:pointer;border-bottom:3px solid #9C27B0 !important}
+th.hol:hover{background:#E8D8F5 !important}
+td.hol-bg{background:transparent !important}
+/* Weekend column frame: Sat left border, Sun right border */
+th.sat-sep,td.sat-sep{border-left:2px solid var(--gold) !important}
+th.sun-sep,td.sun-sep{border-right:2px solid var(--gold) !important}
 /* Weekday holiday left+right border */
-th.hol-wd,td.hol-wd{box-shadow:inset 2px 0 0 0 #9C27B0,inset -2px 0 0 0 #9C27B0}
+th.hol-wd,td.hol-wd{border-left:2px solid #9C27B0 !important;border-right:2px solid #9C27B0 !important}
+/* Past date styling */
+td.past-day .cell{color:#CACACA !important;cursor:default !important;pointer-events:none}
+td.past-day .cell.empty{color:#E0E0E0 !important}
+/* Print header (hidden on screen) */
+.print-header{display:none;padding:0 0 8px 0;border-bottom:2px solid #CCC;margin-bottom:10px}
+@media print{
+  @page{size:A3 landscape;margin:8mm}
+  header,#lockBanner,#histBanner,.mbar,.editor-toolbar,.sidebar,#evtPop,#picker{display:none !important}
+  #page-schedule{display:block !important}
+  #editor{display:block !important;height:auto !important}
+  .editor-wrap{height:auto !important;overflow:visible !important;display:block !important}
+  .grid-scroll{overflow:visible !important;padding:4px !important}
+  table.sg{font-size:7px !important}
+  table.sg th,table.sg td{padding:1px !important}
+  .cell{height:18px !important;width:18px !important;min-width:18px !important;font-size:7px !important}
+  .dh-d{font-size:8px !important}.dh-w{font-size:6px !important}
+  table.sg td.sn{min-width:48px !important;font-size:9px !important}
+  .print-header{display:block !important}
+}
 /* History sidebar */
 .sb-hist-item{padding:8px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;border-bottom:1px solid #F5F5F5;transition:background .15s;color:#333}
 .sb-hist-item:hover{background:#F0ECF8}
@@ -293,11 +311,17 @@ tr.evt-training .sn-evt{color:#2E7D32}
 
   <!-- EDITOR (shown when month has data) -->
   <div id="editor" style="display:none;flex-direction:column;height:calc(100vh - 105px)">
+    <div class="print-header">
+      <div style="font-size:18px;font-weight:700;letter-spacing:1px">GLORIA MK 班表</div>
+      <div style="font-size:14px;margin-top:4px;font-weight:600"><span id="printMonthLabel"></span></div>
+      <div style="font-size:11px;color:#888;margin-top:2px">列印日期：<span id="printDateLabel"></span></div>
+    </div>
     <div class="editor-toolbar">
       <button class="btn bw" onclick="autoSchedule()">🎲 重新自動排班</button>
       <button class="btn bd" onclick="openStaffDoModal()">📅 指定休假日</button>
       <button class="btn bd" onclick="clearUnlocked()">🗑 清除未鎖定</button>
       <div class="sep" style="width:1px;height:22px;background:#DDD;margin:0 4px"></div>
+      <button class="btn bd" id="printBtn" onclick="printSchedule()" style="margin-left:auto">🖨️ 匯出簽核</button>
       <span style="font-size:11px;color:#888">點格子選班別・🔒格為手動鎖定・可拖拉兩格互換</span>
     </div>
     <div style="display:flex;flex:1;overflow:hidden">
@@ -500,6 +524,18 @@ const STAFF_DEFAULT={staff:[
   {id:"Vina",  name:"Vina", type:"FT",role:"SA", fixedDayOff:null},
   {id:"婕芸",  name:"婕芸", type:"FT",role:"SA", fixedDayOff:null},
 ],rules:{daysOffPerMonth:{min:10,max:11},noSimultaneousOff:["Wiggie","LIV","Demi"],maxConsecutiveWorkDays:4,preferConsecutiveWorkDays:3,earlyShiftBalanceTolerance:1,staffingRequirements:{weekday:{A:1,M:0,P:3},friday:{A:1,M:1,P:3},weekend:{A:1,M:1,P:3}}}};
+
+function isPastDate(dayIdx){
+  if(!ST.currentMonth) return false;
+  const [y,mo]=ST.currentMonth.split('-').map(Number);
+  const today=new Date(); today.setHours(0,0,0,0);
+  return new Date(y,mo-1,ST.days[dayIdx])<today;
+}
+function printSchedule(){
+  document.getElementById('printMonthLabel').textContent=ST.currentMonth+' 班表';
+  document.getElementById('printDateLabel').textContent=new Date().toLocaleDateString('zh-TW');
+  window.print();
+}
 
 const TW_HOL_2026={'01-01':'元旦','02-16':'除夕','02-17':'初一','02-18':'初二','02-19':'初三','02-20':'初四','02-28':'和平紀念日','04-03':'兒童節補假','04-04':'兒童節/清明','05-01':'勞動節','06-19':'端午節','09-25':'中秋節','10-10':'國慶日'};
 function getAutoHolidays(month){
@@ -776,8 +812,8 @@ function renderGrid(){
   for(let i=0;i<ST.days.length;i++){
     const dow=ST.daysOfWeek[i]; const dt=getDT(dow);
     const isHol=ST.holidays.includes(i);
-    const isSat=dow==='Sat';
-    const thCls=[dt==='weekend'?'wknd':dt==='friday'?'fri':'',isHol?'hol':'',isSat?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+    const isSat=dow==='Sat'; const isSun=dow==='Sun';
+    const thCls=[dt==='weekend'?'wknd':dt==='friday'?'fri':'',isHol?'hol':'',isSat?'sat-sep':'',isSun?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
     h+=`<th class="${thCls}" onclick="toggleHoliday(${i})" title="${isHol?'點擊取消國定假日':'點擊標記為國定假日'}">
       <div class="dh-d">${ST.days[i]}</div>
       <div class="dh-w">${isHol?'假':DOW[dow]||dow}</div>
@@ -790,8 +826,9 @@ function renderGrid(){
     h+=`<tr class="evt evt-${type}"><td class="sn sn-evt">${label}</td>`;
     for(let i=0;i<ST.days.length;i++){
       const v=(ST.events[type]||[])[i]||'';
-      const dt=getDT(ST.daysOfWeek[i]);const isHol=ST.holidays.includes(i);const _isSat=ST.daysOfWeek[i]==='Sat';
-      const tdCls=[(dt==='weekend'?'wbg':''),isHol?'hol-bg':'',_isSat?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+      const dt=getDT(ST.daysOfWeek[i]);const isHol=ST.holidays.includes(i);
+      const _isSat=ST.daysOfWeek[i]==='Sat';const _isSun=ST.daysOfWeek[i]==='Sun';
+      const tdCls=[_isSat?'sat-sep':'',_isSun?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
       h+=`<td class="${tdCls}"><div class="evt-cell${v?' v':''}" onclick="editEvt('${type}',${i},event)" title="${v}">${v}</div></td>`;
     }
     h+='<td colspan="4"></td></tr>';
@@ -812,8 +849,9 @@ function renderGrid(){
       const vio=!isFixed&&vioSet[s.id]?.has(i);
       const hasSwap=ST.swapReqs.some(r=>r.staffId===s.id&&r.dayIdx===i&&r.status==='pending');
       const cls=[sh||'empty',isFixed?'fixed-off':isLk?'locked':'',vio?'vio':'',hasSwap?'swap-req':''].filter(Boolean).join(' ');
-      const _isSat2=ST.daysOfWeek[i]==='Sat';
-      const tdCls=[(dt==='weekend'?'wbg':''),isHol?'hol-bg':'',_isSat2?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+      const _isSat2=ST.daysOfWeek[i]==='Sat';const _isSun2=ST.daysOfWeek[i]==='Sun';
+      const isPast=isPastDate(i);
+      const tdCls=[_isSat2?'sat-sep':'',_isSun2?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':'',isPast?'past-day':''].filter(Boolean).join(' ');
       h+=`<td class="${tdCls}"><div class="cell ${cls}"
         draggable="${!isFixed}" data-s="${s.id}" data-d="${i}"
         onclick="openPicker('${s.id}',${i},event)"
@@ -831,8 +869,8 @@ function renderGrid(){
       const dt=getDT(ST.daysOfWeek[i]); const isHol=ST.holidays.includes(i);
       const cnt=ST.monthStaff.filter(s=>(ST.draft[s.id]||[])[i]===type).length;
       const need=(req[dt]||{})[type]||0;
-      const _isSat3=ST.daysOfWeek[i]==='Sat';
-      h+=`<td class="${[(dt==='weekend'?'wbg':''),isHol?'hol-bg':'',_isSat3?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':'',need>0&&cnt<need?'warn':''].filter(Boolean).join(' ')}">${cnt}</td>`;
+      const _isSat3=ST.daysOfWeek[i]==='Sat';const _isSun3=ST.daysOfWeek[i]==='Sun';
+      h+=`<td class="${[_isSat3?'sat-sep':'',_isSun3?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':'',need>0&&cnt<need?'warn':''].filter(Boolean).join(' ')}">${cnt}</td>`;
     }
     h+='<td colspan="4"></td></tr>';
   }
@@ -1053,6 +1091,7 @@ function toggleHoliday(idx){
 }
 function openPicker(sid,day,e){
   e.stopPropagation();
+  if(isPastDate(day)){ return; }
   if(ST.fixedLocked[sid]?.has(day)){
     const s=ST.monthStaff.find(x=>x.id===sid);
     notify(`${s?.name} ${ST.days[day]}日為指定固定休假日（📌），無法修改`,'err'); return;
@@ -1095,6 +1134,7 @@ function onDL(e){ e.currentTarget.classList.remove('drag-over'); }
 function onDrop(s,d,e){
   e.preventDefault(); e.currentTarget.classList.remove('drag-over');
   if(!dragS||dragS===s&&dragD===d){ dragS=null; return; }
+  if(isPastDate(dragD)||isPastDate(d)){ notify('過去日期無法修改','err'); dragS=null; return; }
   if(ST.fixedLocked[dragS]?.has(dragD)||ST.fixedLocked[s]?.has(d)){
     notify('固定休假日（📌）無法拖拉調換','err'); dragS=null; return;
   }
@@ -1306,7 +1346,7 @@ function updateLockUI(){
   const timeLk=ST.currentMonth&&(()=>{const[y,m]=ST.currentMonth.split('-').map(Number);return new Date()>=new Date(y,m,1);})();
   document.getElementById('lockBanner').style.display=lk?'block':'none';
   document.getElementById('pubBtn').disabled=lk;
-  document.querySelectorAll('.editor-toolbar .btn').forEach(b=>b.disabled=lk);
+  document.querySelectorAll('.editor-toolbar .btn:not(#printBtn)').forEach(b=>b.disabled=lk);
   const lb=document.getElementById('lockBtn');
   if(lb){
     lb.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定此月';
