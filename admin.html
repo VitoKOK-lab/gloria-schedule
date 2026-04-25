@@ -245,7 +245,7 @@ tr.evt-training .sn-evt{color:#2E7D32}
   <div class="hright">
     <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
     <a href="index.html" class="btn bg" target="_blank">👁 員工視圖</a>
-    <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">⬇ 下載班表</button>
+    <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">🚀 發佈班表</button>
   </div>
 </header>
 <div id="lockBanner">🔒 此月份已超過次月1日，無法再修改</div>
@@ -1314,12 +1314,15 @@ function toggleManualLock(){
   if(ST.manualLock){
     if(!confirm('確定要解除鎖定？')) return;
     ST.manualLock=false;
+    updateLockUI();
+    notify('🔓 已解除鎖定');
   } else {
-    if(!confirm('確定要鎖定此月份？鎖定後無法修改班表。')) return;
+    if(!confirm('確定要鎖定並發佈？鎖定後無法修改，並自動下載 JSON 檔案。')) return;
     ST.manualLock=true;
+    updateLockUI();
+    notify('🔒 已鎖定，正在下載班表…');
+    downloadSchedule();
   }
-  updateLockUI();
-  notify(ST.manualLock?'🔒 月份已鎖定':'🔓 已解除鎖定');
 }
 function updateLockUI(){
   const lk=isLocked(ST.currentMonth);
@@ -1329,7 +1332,7 @@ function updateLockUI(){
   document.querySelectorAll('.editor-toolbar .btn:not(#printBtn)').forEach(b=>b.disabled=lk);
   const lb=document.getElementById('lockBtn');
   if(lb){
-    lb.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定此月';
+    lb.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定並發佈';
     lb.className=ST.manualLock?'btn br':'btn bd';
     lb.disabled=timeLk; // can't unlock time-based lock
   }
@@ -1383,28 +1386,64 @@ function gsAddStaff(){
 function gsRemove(i){ if(!confirm(`確定移除 ${ST.staff[i].name}？`))return; ST.staff.splice(i,1); renderGlobalStaff(); }
 function gsToggle(i){ ST.staff[i].type=ST.staff[i].type==='FT'?'PT':'FT'; renderGlobalStaff(); }
 function gsSetFixed(i,val){ ST.staff[i].fixedDayOff=val||null; renderGlobalStaff(); }
-function saveGlobalStaff(){
-  dlJson('staff.json',{staff:ST.staff,rules:ST.rules});
-  notify('已下載 staff.json，放入 data/ 後 git push');
+async function saveGlobalStaff(){
+  const ok=await ghPut('data/staff.json',JSON.stringify({staff:ST.staff,rules:ST.rules},null,2),'更新員工資料');
+  notify(ok?'✅ 員工名單已發佈':'⚠ 發佈失敗，請確認 Token',ok?'ok':'err');
 }
 
 
-function dlJson(filename, data){
+function getPAT(){
+  const cached=localStorage.getItem('gloria_pat')||'';
+  const t=prompt('GitHub Personal Access Token：',cached);
+  if(t===null) return '';
+  localStorage.setItem('gloria_pat',t.trim());
+  return t.trim();
+}
+const REPO='VitoKOK-lab/gloria-schedule';
+async function ghPut(path,content,msg){
+  const pat=getPAT(); if(!pat) return false;
+  const r1=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`,{headers:{'Authorization':`token ${pat}`}});
+  const sha=r1.ok?(await r1.json()).sha:null;
+  const body={message:msg,content:btoa(unescape(encodeURIComponent(content)))};
+  if(sha) body.sha=sha;
+  const r2=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`,{
+    method:'PUT',headers:{'Authorization':`token ${pat}`,'Content-Type':'application/json'},
+    body:JSON.stringify(body)});
+  if(!r2.ok) localStorage.removeItem('gloria_pat'); // 若失敗清掉 token 讓下次重新輸入
+  return r2.ok;
+}
+function dlJson(filename,data){
   const a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
   a.download=filename; a.click();
 }
-function downloadSchedule(){
+async function downloadSchedule(){
   if(!ST.currentMonth){notify('請先選擇月份','err');return;}
+  const sc=buildSC();
+  const btn=document.getElementById('pubBtn');
+  btn.textContent='發佈中…'; btn.disabled=true;
+  const [ok1,ok2,ok3]=await Promise.all([
+    ghPut(`data/schedule_${ST.currentMonth.replace('-','_')}.json`,JSON.stringify(sc,null,2),`更新 ${ST.currentMonth} 班表`),
+    ghPut('data/months.json',JSON.stringify({months:ST.months},null,2),'更新月份索引'),
+    ghPut('data/staff.json',JSON.stringify({staff:ST.staff,rules:ST.rules},null,2),'更新員工資料'),
+  ]);
+  btn.disabled=false; btn.textContent='🚀 發佈班表';
+  if(ok1){
+    // 下載本地備份（檔名加時間戳記）
+    const ts=new Date().toISOString().slice(0,16).replace(/[-T:]/g,'').replace('T','_');
+    setTimeout(()=>dlJson(`schedule_${ST.currentMonth.replace('-','_')}_${ts}.json`,sc),200);
+    ST.dirty=false;
+    notify('✅ 已發佈並下載本地備份，員工約 1 分鐘後可看到');
+  } else {
+    notify('⚠ 發佈失敗，請確認 Token 權限','err');
+  }
+}
+function buildSC(){
   const sc={month:ST.currentMonth,days:ST.days,daysOfWeek:ST.daysOfWeek,
     holidays:ST.holidays,manualLock:ST.manualLock,events:ST.events,
     staff:ST.monthStaff.map(s=>s.id),schedules:{},swapRequests:ST.swapReqs};
   for(const s of ST.monthStaff) sc.schedules[s.id]=(ST.draft[s.id]||[]).map(x=>x||'');
-  dlJson(`schedule_${ST.currentMonth.replace('-','_')}.json`, sc);
-  setTimeout(()=>dlJson('months.json',{months:ST.months}), 300);
-  setTimeout(()=>dlJson('staff.json',{staff:ST.staff,rules:ST.rules}), 600);
-  ST.dirty=false;
-  notify('✅ 已下載 3 個檔案，放入 data/ 後 git push 即完成');
+  return sc;
 }
 
 // ═══════════════════════════════════════════════════
