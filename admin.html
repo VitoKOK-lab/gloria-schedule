@@ -246,7 +246,7 @@ tr.evt-training .sn-evt{color:#2E7D32}
   <div class="hright">
     <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
     <a href="index.html" class="btn bg" target="_blank">👁 員工視圖</a>
-    <button class="btn bp" id="pubBtn" onclick="publish()">🚀 發布班表</button>
+    <button class="btn bp" id="pubBtn" onclick="downloadSchedule()">⬇ 下載班表</button>
   </div>
 </header>
 <div id="lockBanner">🔒 此月份已超過次月1日，無法再修改</div>
@@ -1342,7 +1342,7 @@ function updateLockUI(){
   const lk=isLocked(ST.currentMonth);
   const timeLk=ST.currentMonth&&(()=>{const[y,m]=ST.currentMonth.split('-').map(Number);return new Date()>=new Date(y,m,1);})();
   document.getElementById('lockBanner').style.display=lk?'block':'none';
-  document.getElementById('pubBtn').disabled=lk;
+  // download always available
   document.querySelectorAll('.editor-toolbar .btn:not(#printBtn)').forEach(b=>b.disabled=lk);
   const lb=document.getElementById('lockBtn');
   if(lb){
@@ -1438,24 +1438,22 @@ async function ghPut(path,content,msg){
     body:JSON.stringify(body)});
   return r.ok;
 }
-async function publish(){
+function dlJson(filename, data){
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
+  a.download=filename; a.click();
+}
+function downloadSchedule(){
   if(!ST.currentMonth){notify('請先選擇月份','err');return;}
-  if(!getPAT()){notify('請先到「設定」填入 GitHub Token','err');showPage('settings');return;}
-  document.getElementById('pubBtn').disabled=true;
-  document.getElementById('pubBtn').textContent='發布中…';
   const sc={month:ST.currentMonth,days:ST.days,daysOfWeek:ST.daysOfWeek,
     holidays:ST.holidays,manualLock:ST.manualLock,events:ST.events,
     staff:ST.monthStaff.map(s=>s.id),schedules:{},swapRequests:ST.swapReqs};
   for(const s of ST.monthStaff) sc.schedules[s.id]=(ST.draft[s.id]||[]).map(x=>x||'');
-  const [ok1,ok2,ok3]=await Promise.all([
-    ghPut(`data/schedule_${ST.currentMonth.replace('-','_')}.json`,JSON.stringify(sc,null,2),`更新 ${ST.currentMonth} 班表`),
-    ghPut('data/months.json',JSON.stringify({months:ST.months},null,2),'更新月份索引'),
-    ghPut('data/staff.json',JSON.stringify({staff:ST.staff,rules:ST.rules},null,2),'更新員工資料'),
-  ]);
+  dlJson(`schedule_${ST.currentMonth.replace('-','_')}.json`, sc);
+  setTimeout(()=>dlJson('months.json',{months:ST.months}), 300);
+  setTimeout(()=>dlJson('staff.json',{staff:ST.staff,rules:ST.rules}), 600);
   ST.dirty=false;
-  notify(ok1?'✅ 已發布！同事約 1 分鐘後可看到更新':'⚠ 部分發布失敗，請確認 Token 權限',ok1?'ok':'err');
-  document.getElementById('pubBtn').disabled=false;
-  document.getElementById('pubBtn').textContent='🚀 發布班表';
+  notify('✅ 已下載 3 個檔案，放入 data/ 後 git push 即完成');
 }
 
 // ═══════════════════════════════════════════════════
