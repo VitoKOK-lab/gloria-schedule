@@ -83,17 +83,12 @@ table.sg th.sn{position:sticky;left:0;z-index:3;min-width:78px}
 table.sg td{border:1px solid #EBEBEB;padding:0;text-align:center}
 table.sg td.sn{position:sticky;left:0;z-index:1;background:#FAFAFA;font-weight:600;font-size:13px;padding:0 8px;border-right:2px solid #DDD;white-space:nowrap;min-width:78px}
 .dh-d{font-size:12px;font-weight:700}.dh-w{font-size:9px;opacity:.65}
-th.wknd{background:#F5EDD8;color:#5C4A1E}th.fri{background:var(--gold-d)}
-th.wknd,th.fri{border-bottom:3px solid var(--gold)}
+th.wknd{background:#FFCDD2;color:#B71C1C}th.fri{background:var(--gold-d)}
+th.wknd,th.fri{border-bottom:2px solid #EF9A9A}
 td.wbg{background:transparent}
-th.hol{background:#F0E8F8 !important;cursor:pointer;border-bottom:3px solid #9C27B0 !important}
-th.hol:hover{background:#E8D8F5 !important}
+th.hol{background:#FFCDD2 !important;color:#B71C1C !important;cursor:pointer;border-bottom:2px solid #EF9A9A !important}
+th.hol:hover{background:#EF9A9A !important}
 td.hol-bg{background:transparent !important}
-/* Weekend column frame: Sat left line, Sun right line (box-shadow avoids border-collapse conflicts) */
-th.sat-sep,td.sat-sep{box-shadow:inset 3px 0 0 0 var(--gold)}
-th.sun-sep,td.sun-sep{box-shadow:inset -3px 0 0 0 var(--gold)}
-/* Weekday holiday left+right line */
-th.hol-wd,td.hol-wd{box-shadow:inset 2px 0 0 0 #9C27B0,inset -2px 0 0 0 #9C27B0}
 /* Past date styling */
 td.past-day .cell{color:#CACACA !important;cursor:default !important;pointer-events:none}
 td.past-day .cell.empty{color:#E0E0E0 !important}
@@ -812,8 +807,7 @@ function renderGrid(){
   for(let i=0;i<ST.days.length;i++){
     const dow=ST.daysOfWeek[i]; const dt=getDT(dow);
     const isHol=ST.holidays.includes(i);
-    const isSat=dow==='Sat'; const isSun=dow==='Sun';
-    const thCls=[dt==='weekend'?'wknd':dt==='friday'?'fri':'',isHol?'hol':'',isSat?'sat-sep':'',isSun?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+    const thCls=[dt==='weekend'?'wknd':dt==='friday'?'fri':'',isHol?'hol':''].filter(Boolean).join(' ');
     h+=`<th class="${thCls}" onclick="toggleHoliday(${i})" title="${isHol?'點擊取消國定假日':'點擊標記為國定假日'}">
       <div class="dh-d">${ST.days[i]}</div>
       <div class="dh-w">${isHol?'假':DOW[dow]||dow}</div>
@@ -827,8 +821,7 @@ function renderGrid(){
     for(let i=0;i<ST.days.length;i++){
       const v=(ST.events[type]||[])[i]||'';
       const dt=getDT(ST.daysOfWeek[i]);const isHol=ST.holidays.includes(i);
-      const _isSat=ST.daysOfWeek[i]==='Sat';const _isSun=ST.daysOfWeek[i]==='Sun';
-      const tdCls=[_isSat?'sat-sep':'',_isSun?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+      const tdCls='';
       h+=`<td class="${tdCls}"><div class="evt-cell${v?' v':''}" onclick="editEvt('${type}',${i},event)" title="${v}">${v}</div></td>`;
     }
     h+='<td colspan="4"></td></tr>';
@@ -849,9 +842,8 @@ function renderGrid(){
       const vio=!isFixed&&vioSet[s.id]?.has(i);
       const hasSwap=ST.swapReqs.some(r=>r.staffId===s.id&&r.dayIdx===i&&r.status==='pending');
       const cls=[sh||'empty',isFixed?'fixed-off':isLk?'locked':'',vio?'vio':'',hasSwap?'swap-req':''].filter(Boolean).join(' ');
-      const _isSat2=ST.daysOfWeek[i]==='Sat';const _isSun2=ST.daysOfWeek[i]==='Sun';
       const isPast=isPastDate(i);
-      const tdCls=[_isSat2?'sat-sep':'',_isSun2?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':'',isPast?'past-day':''].filter(Boolean).join(' ');
+      const tdCls=isPast?'past-day':'';
       h+=`<td class="${tdCls}"><div class="cell ${cls}"
         draggable="${!isFixed}" data-s="${s.id}" data-d="${i}"
         onclick="openPicker('${s.id}',${i},event)"
@@ -869,8 +861,7 @@ function renderGrid(){
       const dt=getDT(ST.daysOfWeek[i]); const isHol=ST.holidays.includes(i);
       const cnt=ST.monthStaff.filter(s=>(ST.draft[s.id]||[])[i]===type).length;
       const need=(req[dt]||{})[type]||0;
-      const _isSat3=ST.daysOfWeek[i]==='Sat';const _isSun3=ST.daysOfWeek[i]==='Sun';
-      h+=`<td class="${[_isSat3?'sat-sep':'',_isSun3?'sun-sep':'',isHol&&dt!=='weekend'?'hol-wd':'',need>0&&cnt<need?'warn':''].filter(Boolean).join(' ')}">${cnt}</td>`;
+      h+=`<td class="${need>0&&cnt<need?'warn':''}">${cnt}</td>`;
     }
     h+='<td colspan="4"></td></tr>';
   }
