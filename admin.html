@@ -6,30 +6,34 @@
 <title>Gloria 排班管理</title>
 <style>
 :root{
-  --A:#388E3C;--A-bg:#E8F5E9;--M:#F57C00;--M-bg:#FFF3E0;
-  --P:#1976D2;--P-bg:#E3F2FD;--RL:#757575;--RL-bg:#F5F5F5;
-  --AL:#7B1FA2;--AL-bg:#F3E5F5;--SL:#D32F2F;--SL-bg:#FFEBEE;
-  --OL:#455A64;--OL-bg:#ECEFF1;--SP:#C2185B;--SP-bg:#FCE4EC;
-  --swap:#FF6F00;
-  --accent:#1a1a2e;
+  --A:#2E7D32;--A-bg:#E8F5E9;--M:#E65100;--M-bg:#FFF3E0;
+  --P:#1565C0;--P-bg:#E3F2FD;--RL:#757575;--RL-bg:#F5F5F5;
+  --AL:#6A1B9A;--AL-bg:#F3E5F5;--SL:#C62828;--SL-bg:#FFEBEE;
+  --OL:#37474F;--OL-bg:#ECEFF1;--SP:#AD1457;--SP-bg:#FCE4EC;
+  --swap:#E65100;
+  --accent:#000000;
+  --gold:#C9A96E;--gold-d:#8B6914;--gold-bg:#FBF5E8;
+  --cream:#F7F4EF;--warm-border:#E2D8CC;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Helvetica Neue',Arial,sans-serif;background:#F0F2F5;min-height:100vh;font-size:14px}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:var(--cream);min-height:100vh;font-size:14px}
 
 /* ── Header ── */
-header{background:var(--accent);color:#fff;padding:0 20px;display:flex;align-items:center;height:52px;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);position:sticky;top:0;z-index:100}
-header h1{font-size:16px;font-weight:700;white-space:nowrap}
-.htabs{display:flex;gap:2px}
-.htabs button{background:none;border:none;color:rgba(255,255,255,.6);padding:6px 14px;cursor:pointer;border-radius:6px;font-size:13px;transition:.15s}
-.htabs button.active,.htabs button:hover{background:rgba(255,255,255,.18);color:#fff}
+header{background:#000;color:#fff;padding:0 20px;display:flex;align-items:center;height:54px;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,.5);position:sticky;top:0;z-index:100}
+header h1{font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;white-space:nowrap}
+header h1 span{color:var(--gold)}
+.htabs{display:flex;gap:1px}
+.htabs button{background:none;border:none;color:rgba(255,255,255,.5);padding:6px 14px;cursor:pointer;font-size:12px;letter-spacing:.8px;text-transform:uppercase;transition:.15s;border-bottom:2px solid transparent}
+.htabs button.active{color:var(--gold);border-bottom-color:var(--gold)}
+.htabs button:hover:not(.active){color:rgba(255,255,255,.85)}
 .hright{margin-left:auto;display:flex;align-items:center;gap:8px}
-.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;white-space:nowrap}
-.btn:disabled{opacity:.38;cursor:not-allowed}
-.bg{background:rgba(255,255,255,.12);color:#fff}.bg:hover:not(:disabled){background:rgba(255,255,255,.22)}
-.bp{background:#4CAF50;color:#fff}.bp:hover:not(:disabled){background:#43A047}
-.bw{background:#FF9800;color:#fff}.bw:hover:not(:disabled){background:#F57C00}
-.br{background:#EF5350;color:#fff}.br:hover:not(:disabled){background:#E53935}
-.bd{background:#EEE;color:#555}.bd:hover:not(:disabled){background:#E0E0E0}
+.btn{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:4px;border:none;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.5px;transition:.15s;white-space:nowrap;text-transform:uppercase}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.bg{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}.bg:hover:not(:disabled){background:rgba(255,255,255,.2)}
+.bp{background:var(--gold);color:#000}.bp:hover:not(:disabled){background:#B8962E}
+.bw{background:#fff;color:#000;border:1px solid #000}.bw:hover:not(:disabled){background:#F0F0F0}
+.br{background:#C62828;color:#fff}.br:hover:not(:disabled){background:#B71C1C}
+.bd{background:#F0EBE3;color:#333;border:1px solid var(--warm-border)}.bd:hover:not(:disabled){background:#E8E0D5}
 
 /* ── Month bar ── */
 #lockBanner{display:none;background:#B71C1C;color:#fff;padding:7px 20px;font-size:13px;font-weight:600;text-align:center}
@@ -58,9 +62,9 @@ header h1{font-size:16px;font-weight:700;white-space:nowrap}
 .add-row input{flex:1;min-width:120px;padding:7px 10px;border:1px solid #DDD;border-radius:7px;font-size:13px}
 .add-row input:focus{outline:none;border-color:#1976D2}
 .add-row select{padding:7px 10px;border:1px solid #DDD;border-radius:7px;font-size:13px}
-.wbig{width:100%;padding:14px;font-size:16px;border-radius:10px;border:none;background:#4CAF50;color:#fff;font-weight:700;cursor:pointer;transition:.15s;margin-top:4px}
-.wbig:hover{background:#43A047}
-.wbig.auto{background:var(--accent)}.wbig.auto:hover{background:#2d2d50}
+.wbig{width:100%;padding:14px;font-size:16px;border-radius:10px;border:none;background:var(--gold);color:#000;font-weight:700;cursor:pointer;transition:.15s;margin-top:4px;letter-spacing:.8px;text-transform:uppercase}
+.wbig:hover{background:#B8962E}
+.wbig.auto{background:var(--accent);color:#fff}.wbig.auto:hover{background:#222}
 
 /* ── Schedule editor ── */
 .editor-wrap{display:flex;height:calc(100vh - 100px);overflow:hidden}
@@ -68,8 +72,8 @@ header h1{font-size:16px;font-weight:700;white-space:nowrap}
 .grid-scroll{flex:1;overflow:auto;padding:12px}
 .sidebar{width:310px;border-left:1px solid #E0E0E0;background:#fff;overflow-y:auto;display:flex;flex-direction:column;flex-shrink:0}
 .sb-sec{border-bottom:1px solid #F0F0F0}
-.sb-head{padding:10px 14px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;background:#FAFAFA}
-.sb-head:hover{background:#F5F5F5}
+.sb-head{padding:10px 14px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;background:var(--cream);letter-spacing:.5px;text-transform:uppercase}
+.sb-head:hover{background:#EDE8E1}
 .sb-body{padding:10px 14px}
 
 /* ── Grid ── */
@@ -79,8 +83,23 @@ table.sg th.sn{position:sticky;left:0;z-index:3;min-width:78px}
 table.sg td{border:1px solid #EBEBEB;padding:0;text-align:center}
 table.sg td.sn{position:sticky;left:0;z-index:1;background:#FAFAFA;font-weight:600;font-size:13px;padding:0 8px;border-right:2px solid #DDD;white-space:nowrap;min-width:78px}
 .dh-d{font-size:12px;font-weight:700}.dh-w{font-size:9px;opacity:.65}
-th.wknd{background:#2a2a50}th.fri{background:#1e3a5e}
-td.wbg{background:#FFFDE7}
+th.wknd{background:#5C4A1E}th.fri{background:var(--gold-d)}
+td.wbg{background:#FFE580}
+td.wbg .cell.empty{color:#A08800}
+th.wknd,th.fri{border-bottom:3px solid var(--gold)}
+th.hol{background:#6A1B9A !important;cursor:pointer;border-bottom:3px solid #CE93D8 !important}
+th.hol:hover{background:#7B1FA2 !important}
+td.hol-bg{background:#D4A8EC !important}
+td.hol-bg .cell.empty{color:#6A1B9A}
+/* Saturday left separator */
+th.sat-sep,td.sat-sep{box-shadow:inset 3px 0 0 0 var(--gold)}
+/* Weekday holiday left+right border */
+th.hol-wd,td.hol-wd{box-shadow:inset 2px 0 0 0 #9C27B0,inset -2px 0 0 0 #9C27B0}
+/* History sidebar */
+.sb-hist-item{padding:8px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;border-bottom:1px solid #F5F5F5;transition:background .15s;color:#333}
+.sb-hist-item:hover{background:#F0ECF8}
+.sb-hist-item.active{background:#EDE0FA;font-weight:700;color:#6A1B9A}
+.sb-hist-lk{font-size:9px;background:#6A1B9A;color:#fff;border-radius:3px;padding:1px 5px;margin-left:auto;white-space:nowrap}
 .cell{height:32px;width:32px;min-width:32px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;cursor:pointer;position:relative;user-select:none;transition:opacity .1s}
 .cell:hover{opacity:.75}
 .cell.A{background:var(--A-bg);color:var(--A)}.cell.M{background:var(--M-bg);color:var(--M)}
@@ -89,12 +108,35 @@ td.wbg{background:#FFFDE7}
 .cell.OL{background:var(--OL-bg);color:var(--OL)}.cell.生理假{background:var(--SP-bg);color:var(--SP)}
 .cell.empty{color:#CCC}
 .cell.locked::after{content:'🔒';position:absolute;top:0;right:1px;font-size:7px}
+.cell.fixed-off{background:#FFF8E1 !important;color:#E65100 !important;cursor:default}
+.cell.fixed-off::after{content:'📌';position:absolute;top:0;right:1px;font-size:7px}
 .cell.vio{outline:2px solid #F44336;outline-offset:-2px;border-radius:2px}
 .cell.swap-req{outline:2px dashed var(--swap);outline-offset:-2px;border-radius:2px}
 .cell.swap-req::before{content:'申';position:absolute;top:0;left:1px;font-size:7px;background:var(--swap);color:#fff;border-radius:2px;padding:0 2px;font-weight:700}
 .cell.drag-over{outline:2px dashed #1976D2;outline-offset:-2px}
 tr.stat td{height:18px;font-size:10px;background:#F9F9F9}
 tr.stat td.warn{color:#D32F2F;font-weight:700}
+
+/* ── Event rows ── */
+tr.evt td{height:22px;border-bottom:1px solid #F0F0F0}
+.evt-cell{height:22px;min-width:32px;width:32px;padding:0 2px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;border-radius:3px;color:#BBB}
+.evt-cell:hover{background:rgba(0,0,0,.06)}
+.evt-cell.v{color:#fff}
+tr.evt-audit  .evt-cell.v{background:#7B1FA2}
+tr.evt-meeting .evt-cell.v{background:#1565C0}
+tr.evt-training .evt-cell.v{background:#2E7D32}
+tr.evt .sn-evt{font-size:9px;font-weight:700;padding:0 6px;white-space:nowrap;letter-spacing:.3px}
+tr.evt-audit   .sn-evt{color:#7B1FA2}
+tr.evt-meeting  .sn-evt{color:#1565C0}
+tr.evt-training .sn-evt{color:#2E7D32}
+/* Event text popup */
+#evtPop{display:none;position:fixed;z-index:501;background:#fff;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.22);padding:12px;min-width:210px}
+#evtPop.show{display:block}
+#evtPopTitle{font-weight:700;font-size:13px;margin-bottom:8px;color:#333}
+#evtInput{width:100%;padding:6px 9px;border:1.5px solid #DDD;border-radius:6px;font-size:13px;outline:none}
+#evtInput:focus{border-color:var(--gold)}
+.evtPopFoot{display:flex;gap:6px;margin-top:8px}
+.evtPopFoot button{flex:1;padding:6px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
 
 /* ── Picker popup ── */
 #picker{display:none;position:fixed;z-index:500;background:#fff;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.2);padding:12px;min-width:260px}
@@ -117,12 +159,12 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
 .vbadge{flex-shrink:0;padding:2px 6px;border-radius:9px;font-size:10px;font-weight:700}
 .vbadge.error{background:#FFEBEE;color:#C62828}.vbadge.warn{background:#FFF3E0;color:#E65100}
 .vmsg{flex:1;font-size:12px;line-height:1.45;color:#333}
-.vbtn{flex-shrink:0;background:#E3F2FD;color:#1565C0;border:none;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;white-space:nowrap}
-.vbtn:hover{background:#BBDEFB}
-.sug-box{background:#F1F8E9;border-top:1px solid #DCEDC8;padding:9px 11px;font-size:12px}
-.sug-box b{color:#2E7D32}.sug-act{display:flex;gap:6px;margin-top:7px}
+.vbtn{flex-shrink:0;background:var(--gold-bg);color:var(--gold-d);border:1px solid var(--warm-border);padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;white-space:nowrap}
+.vbtn:hover{background:#F0E6C8}
+.sug-box{background:var(--gold-bg);border-top:1px solid var(--warm-border);padding:9px 11px;font-size:12px}
+.sug-box b{color:var(--gold-d)}.sug-act{display:flex;gap:6px;margin-top:7px}
 .sug-act button{padding:4px 12px;border:none;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600}
-.sa-ok{background:#4CAF50;color:#fff}.sa-ok:hover{background:#43A047}
+.sa-ok{background:var(--gold);color:#000}.sa-ok:hover{background:#B8962E}
 .sa-no{background:#EEE;color:#555}.sa-no:hover{background:#DDD}
 
 /* Swap panel */
@@ -130,7 +172,7 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
 .swbadge{background:var(--swap);color:#fff;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;margin-right:5px}
 .sw-act{display:flex;gap:5px;margin-top:6px}
 .sw-act button{padding:3px 10px;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600}
-.sw-ok{background:#4CAF50;color:#fff}.sw-no{background:#EEE;color:#555}
+.sw-ok{background:var(--gold);color:#000}.sw-no{background:#EEE;color:#555}
 
 /* Staff (settings) page */
 .spage{max-width:640px;margin:24px auto;padding:0 16px}
@@ -150,12 +192,33 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
 .mf input,.mf select{width:100%;padding:8px 11px;border:1px solid #DDD;border-radius:7px;font-size:13px}
 .mf input:focus{outline:none;border-color:#1976D2}
 .mact{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+/* ── Designated Off Calendar ── */
+.do-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:center;justify-content:center}
+.do-bg.show{display:flex}
+.do-mc{background:#fff;border-radius:14px;padding:20px;width:340px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.do-mc h3{font-size:15px;font-weight:700;margin-bottom:3px;letter-spacing:.3px}
+.do-sub{font-size:11px;color:#999;margin-bottom:14px}
+.do-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.do-dow span{text-align:center;font-size:10px;font-weight:600;color:#ABABAB;padding:2px 0}
+.do-dow span.we{color:#EF9A9A}
+.do-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.do-day{border-radius:6px;padding:7px 2px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;background:#F5F5F5;color:#333;transition:.1s;user-select:none}
+.do-day:hover{background:#E0E0E0}
+.do-day.we{color:#EF5350}
+.do-day.sel{background:#FFCDD2;color:#C62828;outline:2px solid #EF9A9A;outline-offset:-1px}
+.do-day.empty{visibility:hidden;cursor:default}
+.do-day.hol{outline:2px solid #9C27B0;outline-offset:-2px;color:#6A1B9A}
+.do-day.hol.we{color:#6A1B9A}
+.do-day.hol.sel{background:#CE93D8;color:#4A148C;outline-color:#6A1B9A}
+.do-foot{display:flex;gap:8px;margin-top:14px;align-items:center}
+.do-cnt{flex:1;font-size:12px;color:#888}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>⚙️ Gloria 排班管理</h1>
+  <h1>GLORIA <span>MK</span></h1>
   <div class="htabs">
     <button class="active" onclick="showPage('schedule')">📅 排班</button>
     <button onclick="showPage('staff')">👥 員工設定</button>
@@ -168,6 +231,7 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
   </div>
 </header>
 <div id="lockBanner">🔒 此月份已超過次月1日，無法再修改</div>
+<div id="histBanner" style="display:none;background:#4A148C;color:#fff;padding:7px 20px;font-size:13px;font-weight:600;text-align:center">📚 歷史班表唯讀模式：<span id="histBannerMonth"></span> &nbsp;<button onclick="exitHistMode()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:2px 10px;border-radius:4px;cursor:pointer;font-size:12px">✕ 返回現在</button></div>
 
 <!-- ══ SCHEDULE PAGE ══ -->
 <div id="page-schedule" class="page active">
@@ -178,6 +242,7 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
     <select id="monthSel" onchange="onMonthChange()" style="font-size:15px;font-weight:700;padding:5px 12px;border-radius:8px;border:1px solid #CCC;color:var(--accent)"></select>
     <button class="btn bd" onclick="nextMonth()">›</button>
     <button class="btn bw" onclick="showNewMonthModal()">＋ 新月份</button>
+    <button class="btn bd" id="lockBtn" onclick="toggleManualLock()">🔒 鎖定此月</button>
     <div class="sep"></div>
     <span id="mbar-status" style="font-size:12px;color:#888"></span>
   </div>
@@ -230,6 +295,7 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
   <div id="editor" style="display:none;flex-direction:column;height:calc(100vh - 105px)">
     <div class="editor-toolbar">
       <button class="btn bw" onclick="autoSchedule()">🎲 重新自動排班</button>
+      <button class="btn bd" onclick="openStaffDoModal()">📅 指定休假日</button>
       <button class="btn bd" onclick="clearUnlocked()">🗑 清除未鎖定</button>
       <div class="sep" style="width:1px;height:22px;background:#DDD;margin:0 4px"></div>
       <span style="font-size:11px;color:#888">點格子選班別・🔒格為手動鎖定・可拖拉兩格互換</span>
@@ -248,6 +314,10 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
         <div class="sb-sec">
           <div class="sb-head" onclick="toggleSb('stat')">📊 班別統計</div>
           <div class="sb-body" id="sb-stat"><div id="statsBox"></div></div>
+        </div>
+        <div class="sb-sec">
+          <div class="sb-head" onclick="toggleSb('hist')">📚 歷史班表</div>
+          <div class="sb-body" id="sb-hist" style="display:block"></div>
         </div>
       </div>
     </div>
@@ -344,6 +414,47 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
   </div>
 </div>
 
+<!-- Staff Designated Off Edit Modal (from editor) -->
+<div class="mbg" id="staffDoModal">
+  <div class="mc" style="width:420px;max-width:95vw">
+    <h3 style="margin-bottom:12px">📅 指定休假日</h3>
+    <div style="font-size:11px;color:#999;margin-bottom:12px">點「選日期」修改後，按「重新自動排班」套用</div>
+    <div id="staffDoList"></div>
+    <div class="mact" style="margin-top:16px">
+      <button class="btn bd" onclick="closeModal('staffDoModal')">關閉</button>
+      <button class="btn bw" onclick="closeModal('staffDoModal');autoSchedule()">🎲 重新自動排班</button>
+    </div>
+  </div>
+</div>
+
+<!-- Designated Off Modal -->
+<div class="do-bg" id="doModal">
+  <div class="do-mc">
+    <h3 id="doTitle">指定休假日</h3>
+    <div class="do-sub">點選日期選擇／取消，可複選</div>
+    <div class="do-dow">
+      <span class="we">日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span class="we">六</span>
+    </div>
+    <div class="do-grid" id="doGrid"></div>
+    <div class="do-foot">
+      <span class="do-cnt" id="doCnt">已選 0 天</span>
+      <button class="btn bd" onclick="closeDoModal()">取消</button>
+      <button class="btn bp" onclick="saveDesignatedOff()">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- Event text popup -->
+<div id="evtPop">
+  <div id="evtPopTitle"></div>
+  <input id="evtInput" type="text" placeholder="輸入事項…" onkeydown="if(event.key==='Enter')saveEvt()">
+  <div class="evtPopFoot">
+    <button onclick="saveEvt()" style="background:var(--gold);color:#000">確認</button>
+    <button onclick="closeEvtPop()" style="background:#EEE;color:#555">取消</button>
+    <button onclick="clearEvt()" style="background:#FFEBEE;color:#C62828">清除</button>
+  </div>
+</div>
+
 <div id="notif"></div>
 
 <script>
@@ -352,12 +463,16 @@ tr.stat td.warn{color:#D32F2F;font-weight:700}
 // ═══════════════════════════════════════════════════
 const ST={
   months:[], currentMonth:null,
-  staff:[],        // global staff list (from staff.json)
-  monthStaff:[],   // staff for current month (may differ)
+  staff:[], monthStaff:[],
   rules:{},
   daysOfWeek:[], days:[],
-  draft:{},        // staffId -> [shift|null, ...]
-  locked:{},       // staffId -> Set<dayIdx>
+  holidays:[],     // 0-based day indices that are national holidays
+  draft:{},
+  locked:{},       // manually locked by manager
+  fixedLocked:{},  // fixed day-off per staff – cannot be edited
+  designatedOff:{}, // staffId -> Set<dayIdx> (monthly calendar picks)
+  events:{audit:[],meeting:[],training:[]},
+  manualLock:false,
   swapReqs:[],
   history:[],
   dirty:false,
@@ -373,19 +488,50 @@ let dragS=null,dragD=null;
 // ═══════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════
+// ── Fallback data (used when fetch fails on file:// protocol) ──
+const STAFF_DEFAULT={staff:[
+  {id:"Wiggie",name:"Wiggie",type:"FT",role:"ASM",fixedDayOff:"Tue"},
+  {id:"LIV",   name:"LIV",  type:"FT",role:"SUP",fixedDayOff:null},
+  {id:"Demi",  name:"Demi", type:"FT",role:"SSA",fixedDayOff:null},
+  {id:"Kai",   name:"Kai",  type:"FT",role:"SA", fixedDayOff:null},
+  {id:"彤彤",  name:"彤彤", type:"FT",role:"SA", fixedDayOff:null},
+  {id:"Alvin", name:"Alvin",type:"FT",role:"SA", fixedDayOff:null},
+  {id:"Yvette",name:"Yvette",type:"FT",role:"SA",fixedDayOff:null},
+  {id:"Vina",  name:"Vina", type:"FT",role:"SA", fixedDayOff:null},
+  {id:"婕芸",  name:"婕芸", type:"FT",role:"SA", fixedDayOff:null},
+],rules:{daysOffPerMonth:{min:10,max:11},noSimultaneousOff:["Wiggie","LIV","Demi"],maxConsecutiveWorkDays:4,preferConsecutiveWorkDays:3,earlyShiftBalanceTolerance:1,staffingRequirements:{weekday:{A:1,M:0,P:3},friday:{A:1,M:1,P:3},weekend:{A:1,M:1,P:3}}}};
+
+const TW_HOL_2026={'01-01':'元旦','02-16':'除夕','02-17':'初一','02-18':'初二','02-19':'初三','02-20':'初四','02-28':'和平紀念日','04-03':'兒童節補假','04-04':'兒童節/清明','05-01':'勞動節','06-19':'端午節','09-25':'中秋節','10-10':'國慶日'};
+function getAutoHolidays(month){
+  const[y,mo]=month.split('-').map(Number);
+  const dim=new Date(y,mo,0).getDate();
+  const hols=y===2026?TW_HOL_2026:{};
+  const result=[];
+  for(let d=1;d<=dim;d++){
+    const key=`${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(hols[key]) result.push(d-1);
+  }
+  return result;
+}
+
 async function init(){
   loadSettings();
   try{
-    const sd=await fetch('data/staff.json').then(r=>r.json());
+    const sd=await fetch('data/staff.json').then(r=>{if(!r.ok)throw new Error();return r.json();});
     ST.staff=sd.staff.map(s=>({...s}));
     ST.rules=sd.rules;
-  } catch(e){ notify('無法載入員工資料','err'); }
+  } catch(e){
+    ST.staff=STAFF_DEFAULT.staff.map(s=>({...s}));
+    ST.rules=STAFF_DEFAULT.rules;
+  }
   try{
-    const idx=await fetch('data/months.json').then(r=>r.json());
+    const idx=await fetch('data/months.json').then(r=>{if(!r.ok)throw new Error();return r.json();});
     ST.months=[...idx.months];
-  } catch(e){ ST.months=['2026-04']; }
+  } catch(e){ ST.months=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06']; }
   buildMonthSel();
-  const latest=ST.months[ST.months.length-1];
+  const tm=todayMonth();
+  const active=ST.months.filter(m=>m>=tm);
+  const latest=active.length?active[0]:ST.months[ST.months.length-1];
   document.getElementById('monthSel').value=latest;
   await loadMonth(latest);
   renderGlobalStaff();
@@ -394,47 +540,85 @@ async function init(){
 // ═══════════════════════════════════════════════════
 //  MONTH
 // ═══════════════════════════════════════════════════
+function todayMonth(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
 function buildMonthSel(){
   const sel=document.getElementById('monthSel');
-  sel.innerHTML=ST.months.map(m=>`<option value="${m}">${m}</option>`).join('');
+  const tm=todayMonth();
+  sel.innerHTML=ST.months.filter(m=>m>=tm).map(m=>`<option value="${m}">${m}</option>`).join('');
 }
-function onMonthChange(){ loadMonth(document.getElementById('monthSel').value); }
+function renderHistPanel(){
+  const tm=todayMonth();
+  const past=[...ST.months].filter(m=>m<tm).reverse();
+  const box=document.getElementById('sb-hist');
+  if(!box) return;
+  if(!past.length){box.innerHTML='<div style="padding:10px 14px;font-size:12px;color:#AAA">無歷史班表</div>';return;}
+  box.innerHTML=past.map(m=>`<div class="sb-hist-item${ST.currentMonth===m?' active':''}" onclick="loadHistMonth('${m}')">${m}<span class="sb-hist-lk">🔒 歷史</span></div>`).join('');
+}
+async function loadHistMonth(m){
+  await loadMonth(m);
+  document.getElementById('histBanner').style.display='block';
+  document.getElementById('histBannerMonth').textContent=m;
+}
+function exitHistMode(){
+  document.getElementById('histBanner').style.display='none';
+  const tm=todayMonth();
+  const active=ST.months.filter(m=>m>=tm);
+  const target=active[active.length-1]||ST.months[ST.months.length-1];
+  document.getElementById('monthSel').value=target;
+  loadMonth(target);
+}
+function onMonthChange(){
+  document.getElementById('histBanner').style.display='none';
+  loadMonth(document.getElementById('monthSel').value);
+}
 function prevMonth(){
-  const i=ST.months.indexOf(ST.currentMonth);
-  if(i>0){ document.getElementById('monthSel').value=ST.months[i-1]; loadMonth(ST.months[i-1]); }
+  const tm=todayMonth();const active=ST.months.filter(m=>m>=tm);
+  const i=active.indexOf(ST.currentMonth);
+  if(i>0){document.getElementById('histBanner').style.display='none';document.getElementById('monthSel').value=active[i-1];loadMonth(active[i-1]);}
 }
 function nextMonth(){
-  const i=ST.months.indexOf(ST.currentMonth);
-  if(i<ST.months.length-1){ document.getElementById('monthSel').value=ST.months[i+1]; loadMonth(ST.months[i+1]); }
+  const tm=todayMonth();const active=ST.months.filter(m=>m>=tm);
+  const i=active.indexOf(ST.currentMonth);
+  if(i<active.length-1){document.getElementById('histBanner').style.display='none';document.getElementById('monthSel').value=active[i+1];loadMonth(active[i+1]);}
 }
 
 async function loadMonth(month){
   ST.currentMonth=month;
-  ST.draft={};ST.locked={};ST.history=[];ST.swapReqs=[];
+  ST.draft={};ST.locked={};ST.fixedLocked={};ST.designatedOff={};ST.history=[];ST.swapReqs=[];ST.holidays=[];ST.manualLock=false;
   updateHistBadge(); updateLockUI();
   document.getElementById('mbar-status').textContent='載入中…';
   let hasData=false;
   try{
     const sc=await fetch(`data/schedule_${month.replace('-','_')}.json?t=${Date.now()}`).then(r=>r.json());
     ST.daysOfWeek=sc.daysOfWeek; ST.days=sc.days;
+    ST.holidays=(sc.holidays&&sc.holidays.length>0)?sc.holidays:getAutoHolidays(month);
     ST.monthStaff=(sc.staff||[]).map(id=>ST.staff.find(s=>s.id===id)||{id,name:id,type:'FT'});
     for(const id of (sc.staff||[])){
       ST.draft[id]=[...(sc.schedules[id]||[])];
       ST.locked[id]=new Set();
     }
     ST.swapReqs=sc.swapRequests||[];
+    ST.manualLock=sc.manualLock||false;
+    ST.designatedOff={};
+    if(sc.designatedOff){ for(const[id,days]of Object.entries(sc.designatedOff)) ST.designatedOff[id]=new Set(days); }
+    const _n=sc.days.length;
+    const _mk=arr=>Array.isArray(arr)&&arr.length===_n?arr.map(v=>v||''):new Array(_n).fill('');
+    ST.events={audit:_mk((sc.events||{}).audit),meeting:_mk((sc.events||{}).meeting),training:_mk((sc.events||{}).training)};
     hasData=true;
     document.getElementById('mbar-status').textContent='';
   } catch(e){
-    // No data – build calendar, show wizard
     const [y,mo]=month.split('-').map(Number);
     const dim=new Date(y,mo,0).getDate();
     ST.days=Array.from({length:dim},(_,i)=>i+1);
     ST.daysOfWeek=calcDOW(y,mo,dim);
+    ST.holidays=getAutoHolidays(month);
     ST.monthStaff=ST.staff.map(s=>({...s}));
     for(const s of ST.monthStaff){ ST.draft[s.id]=new Array(dim).fill(null); ST.locked[s.id]=new Set(); }
+    ST.events={audit:new Array(dim).fill(''),meeting:new Array(dim).fill(''),training:new Array(dim).fill('')};
     document.getElementById('mbar-status').textContent='尚無班表';
   }
+  applyFixedLocked();
+  renderHistPanel();
   if(hasData){ showEditor(); } else { showWizard(); }
 }
 
@@ -458,14 +642,27 @@ function showEditor(){
 // ═══════════════════════════════════════════════════
 //  WIZARD
 // ═══════════════════════════════════════════════════
+const DOW_KEYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DOW_LBL_W=['週一','週二','週三','週四','週五','週六','週日'];
+const ROLES=['SA','SSA','SUP','ASM'];
+function fixedOpts(cur){
+  return `<option value="">無固定休</option>`+DOW_KEYS.map((d,k)=>`<option value="${d}"${cur===d?' selected':''}>${DOW_LBL_W[k]}固定休</option>`).join('');
+}
+function roleOpts(cur){
+  return ROLES.map(r=>`<option value="${r}"${cur===r?' selected':''}>${r}</option>`).join('');
+}
 function renderWizStaff(){
-  document.getElementById('wizStaffList').innerHTML=ST.monthStaff.map((s,i)=>`
-    <div class="srow">
-      <span class="sname">${s.name}</span>
-      <span class="stag ${s.type}">${s.type==='FT'?'正職 FT':'兼職 PT'}</span>
-      <button class="btn bd" onclick="wizToggleType(${i})" style="padding:3px 10px;font-size:11px">${s.type==='FT'?'改兼職':'改正職'}</button>
-      <button class="btn br" onclick="wizRemove(${i})" style="padding:3px 10px;font-size:11px">移除</button>
-    </div>`).join('');
+  document.getElementById('wizStaffList').innerHTML=ST.monthStaff.map((s,i)=>{
+    const cnt=(ST.designatedOff[s.id]||new Set()).size;
+    const doLabel=cnt?`📅 <b style="color:#C62828">${cnt}天</b>`:'📅 休假日';
+    return `<div class="srow" style="flex-wrap:wrap;gap:6px">
+      <span class="sname" style="min-width:60px">${s.name}</span>
+      <select onchange="ST.monthStaff[${i}].role=this.value" style="padding:3px 6px;border:1px solid #DDD;border-radius:5px;font-size:11px">${roleOpts(s.role||'SA')}</select>
+      <span class="stag ${s.type}" style="cursor:pointer" onclick="wizToggleType(${i})">${s.type}</span>
+      <button class="btn bd" onclick="openDoModal('${s.id}')" style="padding:3px 10px;font-size:11px">${doLabel}</button>
+      <button class="btn br" onclick="wizRemove(${i})" style="padding:3px 8px;font-size:11px;margin-left:auto">✕</button>
+    </div>`;
+  }).join('');
 }
 function wizAddStaff(){
   const name=document.getElementById('wizName').value.trim();
@@ -505,6 +702,49 @@ function wizAutoAndGo(){
 }
 
 // ═══════════════════════════════════════════════════
+//  DESIGNATED OFF MODAL
+// ═══════════════════════════════════════════════════
+let _doStaff=null, _doSel=new Set();
+function openDoModal(staffId){
+  _doStaff=staffId; _doSel=new Set(ST.designatedOff[staffId]||[]);
+  const s=ST.monthStaff.find(x=>x.id===staffId);
+  document.getElementById('doTitle').textContent=`${s.name} 的指定休假日`;
+  renderDoGrid();
+  document.getElementById('doModal').classList.add('show');
+}
+function renderDoGrid(){
+  const[y,mo]=ST.currentMonth.split('-').map(Number);
+  const firstDow=new Date(y,mo-1,1).getDay(); // 0=Sun
+  const n=ST.days.length;
+  let h='';
+  for(let i=0;i<firstDow;i++) h+='<div class="do-day empty"></div>';
+  for(let i=0;i<n;i++){
+    const dow=ST.daysOfWeek[i];
+    const we=dow==='Sat'||dow==='Sun';
+    const isHol=ST.holidays.includes(i);
+    const sel=_doSel.has(i);
+    const cls=['do-day',we?'we':'',isHol?'hol':'',sel?'sel':''].filter(Boolean).join(' ');
+    h+=`<div class="${cls}" onclick="toggleDoDay(${i})">${ST.days[i]}${isHol?'<span style="font-size:7px;display:block;line-height:1">假</span>':''}</div>`;
+  }
+  document.getElementById('doGrid').innerHTML=h;
+  document.getElementById('doCnt').textContent=`已選 ${_doSel.size} 天`;
+}
+function renderStaffDoList(){
+  const el=document.getElementById('staffDoList'); if(!el)return;
+  el.innerHTML=ST.monthStaff.map(s=>{
+    const cnt=(ST.designatedOff[s.id]||new Set()).size;
+    return `<div class="srow">
+      <span class="sname">${s.name}</span>
+      <button class="btn bd" onclick="openDoModal('${s.id}')" style="padding:3px 10px;font-size:11px">📅 ${cnt?`<b style="color:#C62828">${cnt}天</b>`:'選日期'}</button>
+    </div>`;
+  }).join('');
+}
+function openStaffDoModal(){ renderStaffDoList(); document.getElementById('staffDoModal').classList.add('show'); }
+function toggleDoDay(idx){ if(_doSel.has(idx))_doSel.delete(idx);else _doSel.add(idx); renderDoGrid(); }
+function saveDesignatedOff(){ ST.designatedOff[_doStaff]=new Set(_doSel); closeDoModal(); renderWizStaff(); renderStaffDoList(); notify('已儲存指定休假日'); }
+function closeDoModal(){ document.getElementById('doModal').classList.remove('show'); _doStaff=null; }
+
+// ═══════════════════════════════════════════════════
 //  HISTORY / UNDO
 // ═══════════════════════════════════════════════════
 function pushHistory(){
@@ -535,24 +775,47 @@ function renderGrid(){
   let h='<thead><tr><th class="sn">姓名</th>';
   for(let i=0;i<ST.days.length;i++){
     const dow=ST.daysOfWeek[i]; const dt=getDT(dow);
-    h+=`<th class="${dt==='weekend'?'wknd':dt==='friday'?'fri':''}"><div class="dh-d">${ST.days[i]}</div><div class="dh-w">${DOW[dow]||dow}</div></th>`;
+    const isHol=ST.holidays.includes(i);
+    const isSat=dow==='Sat';
+    const thCls=[dt==='weekend'?'wknd':dt==='friday'?'fri':'',isHol?'hol':'',isSat?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+    h+=`<th class="${thCls}" onclick="toggleHoliday(${i})" title="${isHol?'點擊取消國定假日':'點擊標記為國定假日'}">
+      <div class="dh-d">${ST.days[i]}</div>
+      <div class="dh-w">${isHol?'假':DOW[dow]||dow}</div>
+    </th>`;
   }
   h+='<th>早</th><th>中</th><th>晚</th><th>休</th></tr></thead><tbody>';
+  // ── Event rows ──
+  const evtDef=[['audit','L&P 審計'],['meeting','開會/月會'],['training','培訓/活動']];
+  for(const[type,label] of evtDef){
+    h+=`<tr class="evt evt-${type}"><td class="sn sn-evt">${label}</td>`;
+    for(let i=0;i<ST.days.length;i++){
+      const v=(ST.events[type]||[])[i]||'';
+      const dt=getDT(ST.daysOfWeek[i]);const isHol=ST.holidays.includes(i);const _isSat=ST.daysOfWeek[i]==='Sat';
+      const tdCls=[(dt==='weekend'?'wbg':''),isHol?'hol-bg':'',_isSat?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+      h+=`<td class="${tdCls}"><div class="evt-cell${v?' v':''}" onclick="editEvt('${type}',${i},event)" title="${v}">${v}</div></td>`;
+    }
+    h+='<td colspan="4"></td></tr>';
+  }
   for(const s of ST.monthStaff){
     const sc=ST.draft[s.id]||[];
     const lk=ST.locked[s.id]||new Set();
-    h+=`<tr><td class="sn">${s.name}<span style="font-size:9px;color:${s.type==='PT'?'#F57C00':'#9E9E9E'};margin-left:3px">${s.type}</span></td>`;
+    const flk=ST.fixedLocked[s.id]||new Set();
+    h+=`<tr><td class="sn">${s.name}<span style="font-size:9px;color:${s.type==='PT'?'#F57C00':'#9E9E9E'};margin-left:3px">${s.type}</span>${s.fixedDayOff?`<span style="font-size:8px;color:#E65100;margin-left:3px">📌${DOW[s.fixedDayOff]}</span>`:''}</td>`;
     let A=0,M=0,P=0,off=0;
     for(let i=0;i<ST.days.length;i++){
       const sh=sc[i]||''; const dt=getDT(ST.daysOfWeek[i]);
+      const isHol=ST.holidays.includes(i);
       if(sh==='A')A++;else if(sh==='M')M++;else if(sh==='P')P++;
       if(isOff(sh)&&sh)off++;
-      const isLk=lk.has(i);
-      const vio=vioSet[s.id]?.has(i);
+      const isFixed=flk.has(i);
+      const isLk=!isFixed&&lk.has(i);
+      const vio=!isFixed&&vioSet[s.id]?.has(i);
       const hasSwap=ST.swapReqs.some(r=>r.staffId===s.id&&r.dayIdx===i&&r.status==='pending');
-      const cls=[sh||'empty',isLk?'locked':'',vio?'vio':'',hasSwap?'swap-req':''].filter(Boolean).join(' ');
-      h+=`<td class="${dt==='weekend'?'wbg':''}"><div class="cell ${cls}"
-        draggable="true" data-s="${s.id}" data-d="${i}"
+      const cls=[sh||'empty',isFixed?'fixed-off':isLk?'locked':'',vio?'vio':'',hasSwap?'swap-req':''].filter(Boolean).join(' ');
+      const _isSat2=ST.daysOfWeek[i]==='Sat';
+      const tdCls=[(dt==='weekend'?'wbg':''),isHol?'hol-bg':'',_isSat2?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':''].filter(Boolean).join(' ');
+      h+=`<td class="${tdCls}"><div class="cell ${cls}"
+        draggable="${!isFixed}" data-s="${s.id}" data-d="${i}"
         onclick="openPicker('${s.id}',${i},event)"
         ondragstart="onDS('${s.id}',${i})"
         ondragover="onDO(event)"
@@ -565,10 +828,11 @@ function renderGrid(){
   for(const type of ['A','M','P']){
     h+=`<tr class="stat"><td class="sn" style="font-size:10px;padding:0 8px;color:${type==='A'?'var(--A)':type==='M'?'var(--M)':'var(--P)'}">${type==='A'?'早':type==='M'?'中':'晚'}班人數</td>`;
     for(let i=0;i<ST.days.length;i++){
-      const dt=getDT(ST.daysOfWeek[i]);
+      const dt=getDT(ST.daysOfWeek[i]); const isHol=ST.holidays.includes(i);
       const cnt=ST.monthStaff.filter(s=>(ST.draft[s.id]||[])[i]===type).length;
       const need=(req[dt]||{})[type]||0;
-      h+=`<td class="${dt==='weekend'?'wbg':''}${need>0&&cnt<need?' warn':''}">${cnt}</td>`;
+      const _isSat3=ST.daysOfWeek[i]==='Sat';
+      h+=`<td class="${[(dt==='weekend'?'wbg':''),isHol?'hol-bg':'',_isSat3?'sat-sep':'',isHol&&dt!=='weekend'?'hol-wd':'',need>0&&cnt<need?'warn':''].filter(Boolean).join(' ')}">${cnt}</td>`;
     }
     h+='<td colspan="4"></td></tr>';
   }
@@ -610,7 +874,6 @@ function computeViolations(){
   for(let i=0;i<ST.days.length;i++){
     const off=trio.filter(s=>isOff((ST.draft[s.id]||[])[i]));
     if(off.length>=3) viols.push({type:'error',code:'trio',msg:`${ST.days[i]}日：${off.map(s=>s.name).join('+')} 三人同休`,cells:off.map(s=>({s:s.id,d:i})),meta:{day:i,trio:off}});
-    else if(off.length===2) viols.push({type:'warn',code:'pair',msg:`${ST.days[i]}日：${off.map(s=>s.name).join('+')} 同休`,cells:off.map(s=>({s:s.id,d:i})),meta:{day:i,pair:off}});
   }
   // 3. Understaffed
   for(let i=0;i<ST.days.length;i++){
@@ -762,8 +1025,39 @@ function renderStats(){
 // ═══════════════════════════════════════════════════
 //  PICKER
 // ═══════════════════════════════════════════════════
+function applyFixedLocked(){
+  for(const s of ST.monthStaff){
+    if(!ST.fixedLocked[s.id]) ST.fixedLocked[s.id]=new Set();
+    if(!ST.locked[s.id]) ST.locked[s.id]=new Set();
+    if(!ST.draft[s.id]) ST.draft[s.id]=new Array(ST.days.length).fill(null);
+    if(s.fixedDayOff){
+      for(let d=0;d<ST.days.length;d++){
+        if(ST.daysOfWeek[d]===s.fixedDayOff){
+          ST.draft[s.id][d]='RL';
+          ST.fixedLocked[s.id].add(d);
+        }
+      }
+    }
+  }
+}
+function wizSetFixed(i,val){
+  ST.monthStaff[i].fixedDayOff=val||null;
+  applyFixedLocked();
+  renderWizStaff();
+}
+function toggleHoliday(idx){
+  const pos=ST.holidays.indexOf(idx);
+  if(pos>=0) ST.holidays.splice(pos,1); else ST.holidays.push(idx);
+  renderGrid(); renderViolations();
+  notify(ST.holidays.includes(idx)?`${ST.days[idx]}日 標記為國定假日`:`${ST.days[idx]}日 取消國定假日`);
+}
 function openPicker(sid,day,e){
-  e.stopPropagation(); pkStaff=sid; pkDay=day;
+  e.stopPropagation();
+  if(ST.fixedLocked[sid]?.has(day)){
+    const s=ST.monthStaff.find(x=>x.id===sid);
+    notify(`${s?.name} ${ST.days[day]}日為指定固定休假日（📌），無法修改`,'err'); return;
+  }
+  pkStaff=sid; pkDay=day;
   const s=ST.monthStaff.find(x=>x.id===sid);
   const sh=(ST.draft[sid]||[])[day]||'';
   const isLk=ST.locked[sid]?.has(day);
@@ -801,8 +1095,13 @@ function onDL(e){ e.currentTarget.classList.remove('drag-over'); }
 function onDrop(s,d,e){
   e.preventDefault(); e.currentTarget.classList.remove('drag-over');
   if(!dragS||dragS===s&&dragD===d){ dragS=null; return; }
-  pushHistory();
+  if(ST.fixedLocked[dragS]?.has(dragD)||ST.fixedLocked[s]?.has(d)){
+    notify('固定休假日（📌）無法拖拉調換','err'); dragS=null; return;
+  }
   const s1=(ST.draft[dragS]||[])[dragD]; const s2=(ST.draft[s]||[])[d];
+  if(dragD!==d){ notify('只能和同一天的人換班','err'); dragS=null; return; }
+  if(s1!==s2){ notify(`只能和相同時段（${s1||'休'}）的人換班，目標是 ${s2||'休'}`,'err'); dragS=null; return; }
+  pushHistory();
   setShift(dragS,dragD,s2||null,true); setShift(s,d,s1||null,true);
   dragS=null; renderGrid(); renderViolations(); renderStats();
 }
@@ -817,6 +1116,11 @@ function autoSchedule(){
   const n=ST.days.length;
   const req=ST.rules.staffingRequirements||{weekday:{A:1,M:0,P:3},friday:{A:1,M:1,P:3},weekend:{A:1,M:1,P:3}};
   const noCoOff=(ST.rules.noSimultaneousOff||[]).map(nm=>ST.monthStaff.find(s=>s.id===nm||s.name===nm)).filter(Boolean).map(s=>s.id);
+  // Pre-lock designated off days
+  for(const s of ft){
+    const doff=ST.designatedOff[s.id];
+    if(doff){ for(const d of doff){ if(d>=0&&d<n){ ST.locked[s.id].add(d); ST.draft[s.id][d]='RL'; } } }
+  }
   const sched={};
   for(const s of ft){ sched[s.id]=Array.from({length:n},(_,i)=>ST.locked[s.id]?.has(i)?(ST.draft[s.id]||[])[i]||null:null); }
   const shuffled=sfl([...ft]);
@@ -844,7 +1148,10 @@ function autoSchedule(){
     const working=sfl(shuffled.filter(s=>sched[s.id][d]==='__W'));
     const lkA=ft.filter(s=>sched[s.id][d]==='A').length;
     const lkM=ft.filter(s=>sched[s.id][d]==='M').length;
-    const nA=Math.max(0,(r.A||0)-lkA), nM=Math.max(0,(r.M||0)-lkM);
+    // Dynamic M: add 1 middle shift on weekdays when ≥5 people are working
+    const totalWorking=working.length+lkA+lkM+ft.filter(s=>sched[s.id][d]==='P').length;
+    const baseM=(r.M||0)||(dt==='weekday'&&totalWorking>=5?1:0);
+    const nA=Math.max(0,(r.A||0)-lkA), nM=Math.max(0,baseM-lkM);
     working.sort((a,b)=>{const ca=sched[a.id].filter(x=>x==='A').length,cb=sched[b.id].filter(x=>x==='A').length;return ca-cb+(Math.random()-.5)*.4;});
     let idx=0;
     for(let i=0;i<nA&&idx<working.length;i++,idx++) sched[working[idx].id][d]='A';
@@ -979,14 +1286,33 @@ function renderSwapPanel(){
 // ═══════════════════════════════════════════════════
 function isLocked(month){
   if(!month) return false;
+  if(ST.manualLock) return true;
   const [y,m]=month.split('-').map(Number);
   return new Date()>=new Date(y,m,1);
 }
+function toggleManualLock(){
+  if(ST.manualLock){
+    if(!confirm('確定要解除鎖定？')) return;
+    ST.manualLock=false;
+  } else {
+    if(!confirm('確定要鎖定此月份？鎖定後無法修改班表。')) return;
+    ST.manualLock=true;
+  }
+  updateLockUI();
+  notify(ST.manualLock?'🔒 月份已鎖定':'🔓 已解除鎖定');
+}
 function updateLockUI(){
   const lk=isLocked(ST.currentMonth);
+  const timeLk=ST.currentMonth&&(()=>{const[y,m]=ST.currentMonth.split('-').map(Number);return new Date()>=new Date(y,m,1);})();
   document.getElementById('lockBanner').style.display=lk?'block':'none';
   document.getElementById('pubBtn').disabled=lk;
   document.querySelectorAll('.editor-toolbar .btn').forEach(b=>b.disabled=lk);
+  const lb=document.getElementById('lockBtn');
+  if(lb){
+    lb.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定此月';
+    lb.className=ST.manualLock?'btn br':'btn bd';
+    lb.disabled=timeLk; // can't unlock time-based lock
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -1000,8 +1326,10 @@ function showNewMonthModal(){
 async function createMonth(){
   const m=document.getElementById('nmInput').value.trim();
   if(!/^\d{4}-\d{2}$/.test(m)){notify('格式錯誤，請輸入 YYYY-MM','err');return;}
+  if(m<todayMonth()){notify('無法新增過去月份，請從側欄「歷史班表」查閱','err');return;}
   if(!ST.months.includes(m)) ST.months.push(m);
   buildMonthSel(); document.getElementById('monthSel').value=m;
+  document.getElementById('histBanner').style.display='none';
   closeModal('newMonthModal'); await loadMonth(m);
 }
 function toggleSb(id){
@@ -1015,11 +1343,12 @@ function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 // ═══════════════════════════════════════════════════
 function renderGlobalStaff(){
   document.getElementById('globalStaffList').innerHTML=ST.staff.map((s,i)=>`
-    <div class="srow">
-      <span class="sname">${s.name}</span>
-      <span class="stag ${s.type}">${s.type==='FT'?'正職 FT':'兼職 PT'}</span>
-      <button class="btn bd" onclick="gsToggle(${i})" style="padding:3px 10px;font-size:11px">${s.type==='FT'?'改兼職':'改正職'}</button>
-      <button class="btn br" onclick="gsRemove(${i})" style="padding:3px 10px;font-size:11px">移除</button>
+    <div class="srow" style="flex-wrap:wrap;gap:6px">
+      <span class="sname" style="min-width:60px">${s.name}</span>
+      <select onchange="ST.staff[${i}].role=this.value" style="padding:3px 6px;border:1px solid #DDD;border-radius:5px;font-size:11px">${roleOpts(s.role||'SA')}</select>
+      <span class="stag ${s.type}" style="cursor:pointer" onclick="gsToggle(${i})">${s.type}</span>
+      <select onchange="gsSetFixed(${i},this.value)" style="padding:3px 6px;border:1px solid #DDD;border-radius:5px;font-size:11px;color:#555">${fixedOpts(s.fixedDayOff||'')}</select>
+      <button class="btn br" onclick="gsRemove(${i})" style="padding:3px 8px;font-size:11px;margin-left:auto">✕</button>
     </div>`).join('');
 }
 function gsAddStaff(){
@@ -1027,12 +1356,13 @@ function gsAddStaff(){
   const t=document.getElementById('gsType').value;
   if(!n){notify('請輸入姓名','err');return;}
   if(ST.staff.find(s=>s.name===n)){notify('姓名重複','err');return;}
-  ST.staff.push({id:n,name:n,type:t});
+  ST.staff.push({id:n,name:n,type:t,role:'SA',fixedDayOff:null});
   document.getElementById('gsName').value='';
   renderGlobalStaff();
 }
 function gsRemove(i){ if(!confirm(`確定移除 ${ST.staff[i].name}？`))return; ST.staff.splice(i,1); renderGlobalStaff(); }
 function gsToggle(i){ ST.staff[i].type=ST.staff[i].type==='FT'?'PT':'FT'; renderGlobalStaff(); }
+function gsSetFixed(i,val){ ST.staff[i].fixedDayOff=val||null; renderGlobalStaff(); }
 async function saveGlobalStaff(){
   const content=JSON.stringify({staff:ST.staff,rules:ST.rules},null,2);
   const ok=await ghPut('data/staff.json',content,'更新員工資料');
@@ -1077,6 +1407,7 @@ async function publish(){
   document.getElementById('pubBtn').disabled=true;
   document.getElementById('pubBtn').textContent='發布中…';
   const sc={month:ST.currentMonth,days:ST.days,daysOfWeek:ST.daysOfWeek,
+    holidays:ST.holidays,manualLock:ST.manualLock,events:ST.events,
     staff:ST.monthStaff.map(s=>s.id),schedules:{},swapRequests:ST.swapReqs};
   for(const s of ST.monthStaff) sc.schedules[s.id]=(ST.draft[s.id]||[]).map(x=>x||'');
   const [ok1,ok2,ok3]=await Promise.all([
@@ -1091,6 +1422,37 @@ async function publish(){
 }
 
 // ═══════════════════════════════════════════════════
+//  EVENT EDITOR
+// ═══════════════════════════════════════════════════
+let _evtType=null,_evtDay=null;
+const EVT_LABELS={audit:'L&P 審計',meeting:'開會／月會',training:'培訓／活動'};
+function editEvt(type,dayIdx,e){
+  if(isLocked(ST.currentMonth)){notify('月份已鎖定，無法修改','err');return;}
+  e.stopPropagation();
+  _evtType=type;_evtDay=dayIdx;
+  document.getElementById('evtPopTitle').textContent=`${EVT_LABELS[type]} · ${ST.days[dayIdx]}日（${DOW[ST.daysOfWeek[dayIdx]]}）`;
+  document.getElementById('evtInput').value=(ST.events[type]||[])[dayIdx]||'';
+  const p=document.getElementById('evtPop');
+  p.classList.add('show');
+  p.style.left=Math.min(e.clientX,window.innerWidth-230)+'px';
+  p.style.top=Math.min(e.clientY+6,window.innerHeight-130)+'px';
+  setTimeout(()=>document.getElementById('evtInput').focus(),30);
+}
+function saveEvt(){
+  if(_evtType===null)return;
+  if(!ST.events[_evtType]) ST.events[_evtType]=new Array(ST.days.length).fill('');
+  ST.events[_evtType][_evtDay]=document.getElementById('evtInput').value.trim();
+  closeEvtPop();renderGrid();ST.dirty=true;
+}
+function clearEvt(){
+  if(_evtType===null)return;
+  if(!ST.events[_evtType]) ST.events[_evtType]=new Array(ST.days.length).fill('');
+  ST.events[_evtType][_evtDay]='';
+  closeEvtPop();renderGrid();ST.dirty=true;
+}
+function closeEvtPop(){document.getElementById('evtPop').classList.remove('show');_evtType=_evtDay=null;}
+
+// ═══════════════════════════════════════════════════
 //  NAV
 // ═══════════════════════════════════════════════════
 function showPage(p){
@@ -1102,7 +1464,10 @@ function notify(msg,type=''){
   const el=document.createElement('div');el.className='ni'+(type?' '+type:'');el.textContent=msg;
   document.getElementById('notif').appendChild(el); setTimeout(()=>el.remove(),3500);
 }
-document.addEventListener('click',e=>{if(!document.getElementById('picker').contains(e.target))closePicker();});
+document.addEventListener('click',e=>{
+  if(!document.getElementById('picker').contains(e.target))closePicker();
+  if(!document.getElementById('evtPop').contains(e.target))closeEvtPop();
+});
 
 init();
 </script>
