@@ -270,7 +270,6 @@ tr.evt-training .sn-evt{color:#2E7D32}
   <div class="htabs">
     <button class="active" onclick="showPage('result')">📋 班表</button>
     <button onclick="showPage('schedule')">🗓 排班</button>
-    <button onclick="showPage('staff')">👥 員工設定</button>
   </div>
   <div class="hright">
     <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
@@ -377,26 +376,6 @@ tr.evt-training .sn-evt{color:#2E7D32}
 
 </div><!-- /page-schedule -->
 
-<!-- ══ STAFF PAGE ══ -->
-<div id="page-staff" class="page">
-  <div class="spage">
-    <div class="wcard" style="margin-top:24px">
-      <div class="wcard-head"><div class="step" style="background:#FF9800">👥</div><h2>全域員工設定</h2><div style="font-size:12px;color:#888;margin-left:8px">（新月份預設從此名單複製）</div></div>
-      <div class="wcard-body">
-        <div id="globalStaffList"></div>
-        <div class="add-row">
-          <input id="gsName" placeholder="新員工姓名" maxlength="20">
-          <select id="gsType"><option value="FT">正職 FT</option><option value="PT">兼職 PT</option></select>
-          <button class="btn bp" onclick="gsAddStaff()">＋ 新增</button>
-        </div>
-        <div style="margin-top:14px;padding-top:12px;border-top:1px solid #EEE">
-          <button class="btn bp" onclick="saveGlobalStaff()">💾 儲存員工名單</button>
-          <span style="font-size:11px;color:#888;margin-left:10px">儲存後發布即可同步</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 <!-- Picker -->
@@ -576,7 +555,6 @@ async function init(){
     const idx=await fetch('data/months.json').then(r=>{if(!r.ok)throw new Error();return r.json();});
     ST.months=[...idx.months];
   } catch(e){ ST.months=['2026-01','2026-02','2026-03','2026-04']; }
-  renderGlobalStaff();
   await loadResultPage();
 }
 
@@ -1316,34 +1294,6 @@ function toggleSb(id){
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 
 // ═══════════════════════════════════════════════════
-//  GLOBAL STAFF PAGE
-// ═══════════════════════════════════════════════════
-function renderGlobalStaff(){
-  document.getElementById('globalStaffList').innerHTML=ST.staff.map((s,i)=>`
-    <div class="srow" style="flex-wrap:wrap;gap:6px">
-      <span class="sname" style="min-width:60px">${s.name}</span>
-      <select onchange="ST.staff[${i}].role=this.value" style="padding:3px 6px;border:1px solid #DDD;border-radius:5px;font-size:11px">${roleOpts(s.role||'SA')}</select>
-      <span class="stag ${s.type}" style="cursor:pointer" onclick="gsToggle(${i})">${s.type}</span>
-      <select onchange="gsSetFixed(${i},this.value)" style="padding:3px 6px;border:1px solid #DDD;border-radius:5px;font-size:11px;color:#555">${fixedOpts(s.fixedDayOff||'')}</select>
-      <button class="btn br" onclick="gsRemove(${i})" style="padding:3px 8px;font-size:11px;margin-left:auto">✕</button>
-    </div>`).join('');
-}
-function gsAddStaff(){
-  const n=document.getElementById('gsName').value.trim();
-  const t=document.getElementById('gsType').value;
-  if(!n){notify('請輸入姓名','err');return;}
-  if(ST.staff.find(s=>s.name===n)){notify('姓名重複','err');return;}
-  ST.staff.push({id:n,name:n,type:t,role:'SA',fixedDayOff:null});
-  document.getElementById('gsName').value='';
-  renderGlobalStaff();
-}
-function gsRemove(i){ if(!confirm(`確定移除 ${ST.staff[i].name}？`))return; ST.staff.splice(i,1); renderGlobalStaff(); }
-function gsToggle(i){ ST.staff[i].type=ST.staff[i].type==='FT'?'PT':'FT'; renderGlobalStaff(); }
-function gsSetFixed(i,val){ ST.staff[i].fixedDayOff=val||null; renderGlobalStaff(); }
-async function saveGlobalStaff(){
-  const ok=await ghPut('data/staff.json',JSON.stringify({staff:ST.staff,rules:ST.rules},null,2),'更新員工資料');
-  notify(ok?'✅ 員工名單已發佈':'⚠ 發佈失敗，請確認 Token',ok?'ok':'err');
-}
 
 
 function getPAT(){
@@ -1537,7 +1487,7 @@ async function loadMonthData(month){
 function showPage(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('.htabs button').forEach((b,i)=>b.classList.toggle('active',['result','schedule','staff'][i]===p));
+  document.querySelectorAll('.htabs button').forEach((b,i)=>b.classList.toggle('active',['result','schedule'][i]===p));
   if(p==='result') loadResultPage();
   if(p==='schedule') initSchedulePage();
 }
