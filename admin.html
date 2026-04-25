@@ -311,9 +311,7 @@ tr.evt-training .sn-evt{color:#2E7D32}
     <div class="wiz-steps-ind">
       <span class="ws ws1 ws-active">① 員工名單</span>
       <span class="ws-arr">▶</span>
-      <span class="ws ws2">② 指定休假</span>
-      <span class="ws-arr">▶</span>
-      <span class="ws ws3">③ 排班</span>
+      <span class="ws ws3">② 排班</span>
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
       <button class="btn bg" id="undoBtn" onclick="undo()" disabled>↩ 還原 <span id="histBadge" style="opacity:.7;font-size:11px">0/10</span></button>
@@ -340,37 +338,17 @@ tr.evt-training .sn-evt{color:#2E7D32}
             <select id="wizType"><option value="FT">正職 FT</option><option value="PT">兼職 PT</option></select>
             <button class="btn bp" onclick="wizAddStaff()">＋ 新增</button>
           </div>
-          <button class="wbig" onclick="wizGo(2)" style="margin-top:16px">確認名單，下一步：指定休假 →</button>
+          <button class="wbig" onclick="wizGo(3)" style="margin-top:16px">確認名單，進入排班 →</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Step 2: Designated Off -->
-  <div id="wiz-s2" style="display:none">
-    <div class="wizard">
-      <div class="wcard">
-        <div class="wcard-head">
-          <div class="step">2</div>
-          <h2>指定休假日</h2>
-        </div>
-        <div class="wcard-body">
-          <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6">為每位員工設定本月指定休假日。<br>進入排班後這些日期將被鎖定，如需修改請回到此步驟。</div>
-          <div id="wiz-do-list"></div>
-          <div style="display:flex;gap:10px;margin-top:16px">
-            <button class="btn bd" onclick="wizGo(1)">← 上一步</button>
-            <button class="wbig" onclick="wizGo(3)" style="flex:1;margin-top:0">確認指定休假，進入排班 →</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Step 3: Editor -->
+  <!-- Step 2: Editor -->
   <div id="wiz-s3" style="display:none;flex-direction:column;height:calc(100vh - 54px - 44px)">
     <div id="lockBanner" style="display:none;background:#B71C1C;color:#fff;padding:7px 20px;font-size:13px;font-weight:600;text-align:center">🔒 此月份已鎖定並發佈</div>
     <div class="editor-toolbar">
-      <button class="btn bd" onclick="wizGo(2)">← 修改指定休假</button>
+      <button class="btn bd" onclick="wizGo(1)">← 修改員工名單</button>
       <div class="sep" style="width:1px;height:22px;background:#DDD;margin:0 4px"></div>
       <button class="btn bw" onclick="autoSchedule()">🎲 自動排班</button>
       <button class="btn bd" onclick="clearUnlocked()">🗑 清除未鎖定</button>
@@ -1297,7 +1275,7 @@ function updateLockUI(){
   const lk=isLocked(ST.currentMonth);
   const lb=document.getElementById('lockBanner');
   if(lb) lb.style.display=lk?'block':'none';
-  document.querySelectorAll('.editor-toolbar .btn:not(#printBtn):not([onclick="wizGo(2)"])').forEach(b=>b.disabled=lk);
+  document.querySelectorAll('.editor-toolbar .btn:not(#printBtn):not([onclick="wizGo(1)"])').forEach(b=>b.disabled=lk);
   const lockBtn=document.getElementById('lockBtn');
   if(lockBtn){
     lockBtn.textContent=ST.manualLock?'🔓 解除鎖定':'🔒 鎖定並發佈';
@@ -1486,10 +1464,9 @@ async function initSchedulePage(){
 function wizGo(step){
   ST.wizStep=step;
   document.getElementById('wiz-s1').style.display=step===1?'':'none';
-  document.getElementById('wiz-s2').style.display=step===2?'':'none';
   document.getElementById('wiz-s3').style.display=step===3?'flex':'none';
-  ['ws1','ws2','ws3'].forEach((c,i)=>document.querySelector('.'+c)?.classList.toggle('ws-active',i+1===step));
-  if(step===2) renderWizDOStep();
+  document.querySelector('.ws1')?.classList.toggle('ws-active',step===1);
+  document.querySelector('.ws3')?.classList.toggle('ws-active',step===3);
   if(step===3){
     applyFixedLocked();
     const hasSchedule=ST.monthStaff.some(s=>(ST.draft[s.id]||[]).some(x=>x&&x!=='RL'));
